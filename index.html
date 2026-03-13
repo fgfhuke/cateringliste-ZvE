@@ -123,6 +123,8 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .error-msg{color:var(--red);font-size:14px;margin-top:8px;min-height:20px}
+.btn-working{animation:btnpulse 0.9s ease-in-out infinite;pointer-events:none;opacity:0.7}
+@keyframes btnpulse{0%,100%{transform:scale(1)}50%{transform:scale(0.96);opacity:0.5}}
 
 @media(max-width:480px){
   body{font-size:18px}
@@ -167,7 +169,10 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     <br>
     <div class="date-bar">
       <label>Datum</label>
-      <input type="date" id="datum-input" onchange="datumWechseln()">
+      <div style="flex:1;position:relative">
+        <input type="date" id="datum-input" onchange="datumWechseln()" style="position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;top:0;left:0;z-index:1">
+        <div id="datum-anzeige" onclick="document.getElementById('datum-input').showPicker?document.getElementById('datum-input').showPicker():document.getElementById('datum-input').click()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:16px;cursor:pointer;color:var(--text);user-select:none">–</div>
+      </div>
       <button class="btn btn-ghost btn-sm" onclick="heuteDatum()">Heute</button>
     </div>
     <div class="count-bar">
@@ -366,19 +371,21 @@ document.querySelectorAll(".tab").forEach(tab=>{
 
 // ── Anwesenheit ──
 function heuteDatum() {
-  document.getElementById("datum-input").value=heute();
-  document.getElementById("topbar-date").textContent=formatDatumMitTag(heute());
+  const h=heute();
+  document.getElementById("datum-input").value=h;
+  document.getElementById("datum-anzeige").textContent=formatDatumMitTag(h);
+  document.getElementById("topbar-date").textContent=formatDatumMitTag(h);
 }
 
 async function datumWechseln() {
   const datum=document.getElementById("datum-input").value;
   if(!datum)return;
-  // Kalender sofort schließen (Mobile + Desktop)
-  const inp = document.getElementById("datum-input");
-  inp.blur();
-  inp.setAttribute("readonly", true);
-  setTimeout(() => inp.removeAttribute("readonly"), 100);
+  // Datum-Anzeige aktualisieren
+  document.getElementById("datum-anzeige").textContent=formatDatumMitTag(datum);
   document.getElementById("topbar-date").textContent=formatDatumMitTag(datum);
+  // Kalender mit 100ms Verzögerung schließen
+  const inp = document.getElementById("datum-input");
+  setTimeout(() => { inp.blur(); inp.setAttribute("readonly",true); setTimeout(()=>inp.removeAttribute("readonly"),50); }, 100);
   setAutosaveStatus("laden");
   anwesendHeute=new Set();
   try {
@@ -494,10 +501,12 @@ async function editSpeichern() {
   const position = document.getElementById("edit-position").value.trim();
   if (!nachname) { document.getElementById("edit-error").textContent = "Nachname erforderlich"; return; }
   const name = vorname ? `${nachname}, ${vorname}` : nachname;
+  const btn = document.querySelector("#edit-modal .btn-primary");
+  btn.classList.add("btn-working");
+  btn.textContent = "Speichere…";
   try {
     const res = await api("editPerson", { id: editId, name, abteilung: position });
     if (res.ok) {
-      // neu vom Server laden damit alles konsistent ist
       const res2 = await api("getPersonen");
       if (res2.ok) allePersonen = sortNachname(mapPersonen(res2.personen));
       renderPersonenverwaltung();
@@ -506,9 +515,13 @@ async function editSpeichern() {
       toast(`${name} gespeichert`);
     } else {
       document.getElementById("edit-error").textContent = res.error;
+      btn.classList.remove("btn-working");
+      btn.textContent = "Speichern";
     }
   } catch(e) {
     document.getElementById("edit-error").textContent = "Verbindungsfehler";
+    btn.classList.remove("btn-working");
+    btn.textContent = "Speichern";
   }
 }
 
@@ -517,6 +530,9 @@ async function personLoeschen() {
   if (!p) return;
   const name = p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname;
   if (!confirm(`"${name}" wirklich löschen?`)) return;
+  const btn = document.querySelector("#edit-modal .btn-sm:last-child");
+  btn.classList.add("btn-working");
+  btn.textContent = "Lösche…";
   try {
     const res = await api("deletePerson", { id: editId });
     if (res.ok) {
@@ -527,9 +543,13 @@ async function personLoeschen() {
       toast(`${name} gelöscht`);
     } else {
       document.getElementById("edit-error").textContent = res.error;
+      btn.classList.remove("btn-working");
+      btn.textContent = "Löschen";
     }
   } catch(e) {
     document.getElementById("edit-error").textContent = "Verbindungsfehler";
+    btn.classList.remove("btn-working");
+    btn.textContent = "Löschen";
   }
 }
 
