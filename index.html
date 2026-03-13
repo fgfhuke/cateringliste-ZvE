@@ -249,6 +249,24 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
       Als CSV exportieren (Excel / Numbers)
     </button>
   </div>
+
+<!-- EDIT MODAL -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:200;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:28px 24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.18)">
+    <div style="font-size:16px;font-weight:600;margin-bottom:20px">Person bearbeiten</div>
+    <div class="card-row">
+      <div class="field"><label>Nachname</label><input type="text" id="edit-nachname" placeholder="Mustermann"></div>
+      <div class="field"><label>Vorname</label><input type="text" id="edit-vorname" placeholder="Max"></div>
+    </div>
+    <div class="field"><label>Position</label><input type="text" id="edit-position" placeholder="z.B. Kameraassistenz"></div>
+    <div class="error-msg" id="edit-error"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary btn-sm" onclick="editSpeichern()" style="width:auto;flex:1">Speichern</button>
+      <button class="btn btn-ghost btn-sm" onclick="editSchliessen()">Abbrechen</button>
+      <button class="btn btn-sm" onclick="personLoeschen()" style="background:var(--red-bg);color:var(--red);border:1.5px solid #f0c0bc">Löschen</button>
+    </div>
+  </div>
+</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -434,7 +452,73 @@ function renderPersonenverwaltung() {
         <div class="person-name"><span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span></div>
         ${p.position?`<div class="person-pos">${p.position}</div>`:""}
       </div>
+      <button class="btn-icon" onclick="editOeffnen('${p.id}')" title="Bearbeiten" style="font-size:16px;color:var(--muted)">✏️</button>
     </div>`).join("");
+}
+
+let editId = null;
+
+function editOeffnen(id) {
+  const p = allePersonen.find(x => x.id === id);
+  if (!p) return;
+  editId = id;
+  document.getElementById("edit-nachname").value = p.nachname;
+  document.getElementById("edit-vorname").value  = p.vorname || "";
+  document.getElementById("edit-position").value = p.position || "";
+  document.getElementById("edit-error").textContent = "";
+  const modal = document.getElementById("edit-modal");
+  modal.style.display = "flex";
+  document.getElementById("edit-nachname").focus();
+}
+
+function editSchliessen() {
+  document.getElementById("edit-modal").style.display = "none";
+  editId = null;
+}
+
+async function editSpeichern() {
+  const nachname = document.getElementById("edit-nachname").value.trim();
+  const vorname  = document.getElementById("edit-vorname").value.trim();
+  const position = document.getElementById("edit-position").value.trim();
+  if (!nachname) { document.getElementById("edit-error").textContent = "Nachname erforderlich"; return; }
+  const name = vorname ? `${nachname}, ${vorname}` : nachname;
+  try {
+    const res = await api("editPerson", { id: editId, name, abteilung: position });
+    if (res.ok) {
+      const idx = allePersonen.findIndex(p => p.id === editId);
+      if (idx !== -1) allePersonen[idx] = { ...allePersonen[idx], nachname, vorname, position };
+      allePersonen = sortNachname(allePersonen);
+      renderPersonenverwaltung();
+      renderListe();
+      editSchliessen();
+      toast(`${name} gespeichert`);
+    } else {
+      document.getElementById("edit-error").textContent = res.error;
+    }
+  } catch(e) {
+    document.getElementById("edit-error").textContent = "Verbindungsfehler";
+  }
+}
+
+async function personLoeschen() {
+  const p = allePersonen.find(x => x.id === editId);
+  if (!p) return;
+  const name = p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname;
+  if (!confirm(`"${name}" wirklich löschen?`)) return;
+  try {
+    const res = await api("deletePerson", { id: editId });
+    if (res.ok) {
+      allePersonen = allePersonen.filter(x => x.id !== editId);
+      renderPersonenverwaltung();
+      renderListe();
+      editSchliessen();
+      toast(`${name} gelöscht`);
+    } else {
+      document.getElementById("edit-error").textContent = res.error;
+    }
+  } catch(e) {
+    document.getElementById("edit-error").textContent = "Verbindungsfehler";
+  }
 }
 
 function toggleAddCard() {
