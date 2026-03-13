@@ -153,7 +153,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.8</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.0</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -168,13 +168,22 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.8</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.0</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
     <div class="tab active" data-tab="anwesenheit">Anwesenheit</div>
     <div class="tab" data-tab="personen">Personen</div>
     <div class="tab" data-tab="export">Übersicht</div>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:6px;padding:0 8px">
+      <span style="font-size:12px;color:var(--muted);white-space:nowrap">Sortierung</span>
+      <select id="sort-select" onchange="sortierungWechseln()" style="font-size:13px;padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-family:var(--sans)">
+        <option value="nachname">Nachname</option>
+        <option value="vorname">Vorname</option>
+        <option value="abteilung">Abteilung</option>
+      </select>
+    </div>
   </div>
 
   <!-- ANWESENHEIT -->
@@ -188,15 +197,10 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
       </div>
       <button class="btn btn-ghost btn-sm" onclick="heuteDatum()">Heute</button>
     </div>
-    <div class="count-bar">
-      <div>
-        <div class="count-num" id="count-anwesend">0</div>
-        <div class="count-label">Anwesend</div>
-      </div>
-      <div style="text-align:right">
-        <div class="count-num" id="count-gesamt" style="color:var(--muted)">0</div>
-        <div class="count-label">Gesamt</div>
-      </div>
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:12px;margin-bottom:10px;box-shadow:var(--shadow)">
+      <label style="margin:0;white-space:nowrap;font-size:13px">Komparsen</label>
+      <input type="number" id="komparsen-input" min="0" placeholder="0" oninput="planAutosave()" style="flex:1;padding:8px 12px;font-size:17px;font-weight:600;max-width:120px">
+      <span style="font-size:13px;color:var(--muted)">Anzahl</span>
     </div>
     <div class="autosave-bar">
       <div class="autosave-dot" id="autosave-dot"></div>
@@ -210,6 +214,16 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     <div class="list-wrap">
       <div class="personen-list" id="personen-list"></div>
       <div class="alpha-sidebar" id="alpha-sidebar"></div>
+    </div>
+    <div class="count-bar" style="margin-top:12px">
+      <div>
+        <div class="count-num" id="count-anwesend">0</div>
+        <div class="count-label">Anwesend</div>
+      </div>
+      <div style="text-align:right">
+        <div class="count-num" id="count-gesamt" style="color:var(--muted)">0</div>
+        <div class="count-label">Gesamt</div>
+      </div>
     </div>
   </div>
 
@@ -240,10 +254,27 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     <div class="card" id="add-card">
       <div class="section-label">Neue Person</div>
       <div class="card-row">
-        <div class="field"><label>Nachname</label><input type="text" id="new-nachname" placeholder="Mustermann"></div>
+        <div class="field"><label>Nachname / Firma</label><input type="text" id="new-nachname" placeholder="Name / Firma"></div>
         <div class="field"><label>Vorname</label><input type="text" id="new-vorname" placeholder="Max"></div>
       </div>
-      <div class="field"><label>Position</label><input type="text" id="new-abt" placeholder="z.B. Kameraassistenz"></div>
+      <div class="field"><label>Abteilung</label>
+        <select id="new-abt">
+          <option value="">– Abteilung wählen –</option>
+          <option value="PRODUZENTEN">PRODUZENTEN</option>
+          <option value="REGIE">REGIE</option>
+          <option value="PRODUKTION">PRODUKTION</option>
+          <option value="KAMERA">KAMERA</option>
+          <option value="KAMERABÜHNE">KAMERABÜHNE</option>
+          <option value="KOSTÜM">KOSTÜM</option>
+          <option value="LICHT">LICHT</option>
+          <option value="MASKENBILD">MASKENBILD</option>
+          <option value="SZENENBILD">SZENENBILD</option>
+          <option value="TON">TON</option>
+          <option value="TURBINE STUDIOS HAUPTHAUS">TURBINE STUDIOS HAUPTHAUS</option>
+          <option value="CAST">CAST</option>
+          <option value="GÄSTE">GÄSTE</option>
+        </select>
+      </div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-primary btn-sm" onclick="personAnlegen()" style="width:auto;flex:1">Anlegen</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleAddCard()">Abbrechen</button>
@@ -280,7 +311,24 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
       <div class="field"><label>Nachname</label><input type="text" id="edit-nachname" placeholder="Mustermann"></div>
       <div class="field"><label>Vorname</label><input type="text" id="edit-vorname" placeholder="Max"></div>
     </div>
-    <div class="field"><label>Position</label><input type="text" id="edit-position" placeholder="z.B. Kameraassistenz"></div>
+    <div class="field"><label>Abteilung</label>
+      <select id="edit-position">
+          <option value="">– Abteilung wählen –</option>
+          <option value="PRODUZENTEN">PRODUZENTEN</option>
+          <option value="REGIE">REGIE</option>
+          <option value="PRODUKTION">PRODUKTION</option>
+          <option value="KAMERA">KAMERA</option>
+          <option value="KAMERABÜHNE">KAMERABÜHNE</option>
+          <option value="KOSTÜM">KOSTÜM</option>
+          <option value="LICHT">LICHT</option>
+          <option value="MASKENBILD">MASKENBILD</option>
+          <option value="SZENENBILD">SZENENBILD</option>
+          <option value="TON">TON</option>
+          <option value="TURBINE STUDIOS HAUPTHAUS">TURBINE STUDIOS HAUPTHAUS</option>
+          <option value="CAST">CAST</option>
+          <option value="GÄSTE">GÄSTE</option>
+        </select>
+    </div>
     <div class="error-msg" id="edit-error"></div>
     <div class="modal-status" id="modal-status" style="display:none"></div>
     <div style="display:flex;gap:10px;margin-top:8px">
@@ -299,7 +347,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 const API_URL = "https://script.google.com/macros/s/AKfycbxS-9nprjfCnUKnZUm8_8S3cZ6trVLJemNg_BERDj2PPIK5uJH2Te62ze4_j7fAuEY9ng/exec";
 // ═══════════════════════════════════════════════════════════
 
-let SESSION_PW = "", allePersonen = [], anwesendHeute = new Set(), exportDaten = [], autosaveTimer = null, PROJEKT_KUERZEL = "";
+let SESSION_PW = "", allePersonen = [], anwesendHeute = new Set(), exportDaten = [], autosaveTimer = null, PROJEKT_KUERZEL = "", sortierung = "nachname";
 
 function heute() { return new Date().toISOString().split("T")[0]; }
 function formatDatum(d) { if(!d)return""; const[y,m,t]=d.split("-"); return`${t}.${m}.${y}`; }
@@ -324,8 +372,28 @@ async function api(action, extra={}) {
   try{return JSON.parse(text);}catch(e){throw new Error("Ungültige Antwort: "+text.slice(0,100));}
 }
 
-function sortNachname(arr) {
-  return arr.slice().sort((a,b)=>{const n=a.nachname.localeCompare(b.nachname,'de');return n!==0?n:(a.vorname||"").localeCompare(b.vorname||"","de");});
+function sortNachname(arr) { return sortPersonen(arr, sortierung); }
+function sortPersonen(arr, by) {
+  return arr.slice().sort((a,b)=>{
+    if(by==="vorname") {
+      const v=(a.vorname||"").localeCompare(b.vorname||"","de");
+      return v!==0?v:a.nachname.localeCompare(b.nachname,"de");
+    }
+    if(by==="abteilung") {
+      const p=(a.position||"").localeCompare(b.position||"","de");
+      return p!==0?p:a.nachname.localeCompare(b.nachname,"de");
+    }
+    // nachname (default)
+    const n=a.nachname.localeCompare(b.nachname,"de");
+    return n!==0?n:(a.vorname||"").localeCompare(b.vorname||"","de");
+  });
+}
+function sortierungWechseln() {
+  sortierung = document.getElementById("sort-select").value;
+  allePersonen = sortPersonen(allePersonen, sortierung);
+  // Bei Abteilung: Alpha-Sidebar ausblenden (macht keinen Sinn)
+  renderListe();
+  renderPersonenverwaltung();
 }
 
 function parseNameString(str) {
@@ -411,7 +479,10 @@ async function datumWechseln() {
   anwesendHeute=new Set();
   try {
     const res=await api("getTeilnahme",{datum});
-    if(res.ok) anwesendHeute=new Set(res.anwesend);
+    if(res.ok) {
+      anwesendHeute=new Set(res.anwesend);
+      document.getElementById("komparsen-input").value = res.komparsen||"";
+    }
     setAutosaveStatus("idle");
   } catch(e) { setAutosaveStatus("err"); }
   renderListe();
@@ -464,12 +535,18 @@ function renderListe() {
   }).join("");
   container.innerHTML=html||'<div style="color:var(--muted);padding:16px 4px;font-size:15px">Keine Einträge.</div>';
 
-  // Alphabet-Sidebar aufbauen
+  // Alphabet-Sidebar aufbauen (nur bei Nachname-Sortierung sinnvoll)
   const sidebar=document.getElementById("alpha-sidebar");
-  const alle="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-  sidebar.innerHTML=alle.map(b=>
-    `<span class="${buchstaben.has(b)?"":"inactive"}" onclick="alphaScroll('${b}')">${b}</span>`
-  ).join("");
+  if(sortierung==="nachname") {
+    const alle="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    sidebar.innerHTML=alle.map(b=>
+      `<span class="${buchstaben.has(b)?"":"inactive"}" onclick="alphaScroll('${b}')">${b}</span>`
+    ).join("");
+    sidebar.style.display="flex";
+  } else {
+    sidebar.innerHTML="";
+    sidebar.style.display="none";
+  }
 
   document.getElementById("count-anwesend").textContent=anwesendHeute.size;
   document.getElementById("count-gesamt").textContent=allePersonen.length;
@@ -520,11 +597,12 @@ async function autosave() {
   const datum=document.getElementById("datum-input").value;
   if(!datum)return;
   setAutosaveStatus("saving");
+  const komparsen = parseInt(document.getElementById("komparsen-input").value)||0;
   const eintraege=allePersonen
     .filter(p=>anwesendHeute.has(p.id))
     .map(p=>({id:p.id,name:p.vorname?`${p.nachname}, ${p.vorname}`:p.nachname,abteilung:p.position||""}));
   try {
-    const res=await api("setTeilnahme",{datum,eintraege});
+    const res=await api("setTeilnahme",{datum,eintraege,komparsen});
     if(res.ok) setAutosaveStatus("saved"); else setAutosaveStatus("err");
   } catch(e) { setAutosaveStatus("err"); }
 }
@@ -565,7 +643,9 @@ function editOeffnen(id) {
   editId = id;
   document.getElementById("edit-nachname").value = p.nachname;
   document.getElementById("edit-vorname").value  = p.vorname || "";
-  document.getElementById("edit-position").value = p.position || "";
+  const sel = document.getElementById("edit-position");
+  sel.value = p.position || "";
+  if(!sel.value) sel.selectedIndex = 0;
   document.getElementById("edit-error").textContent = "";
   const modal = document.getElementById("edit-modal");
   modal.style.display = "flex";
@@ -679,8 +759,8 @@ document.getElementById("new-abt").addEventListener("keydown",e=>{if(e.key==="En
 async function personAnlegen() {
   const nachname=document.getElementById("new-nachname").value.trim();
   const vorname=document.getElementById("new-vorname").value.trim();
-  const position=document.getElementById("new-abt").value.trim();
-  if(!nachname){document.getElementById("add-error").textContent="Nachname erforderlich";return;}
+  const position=document.getElementById("new-abt").value;
+  if(!nachname){document.getElementById("add-error").textContent="Nachname / Firma erforderlich";return;}
   const name=vorname?`${nachname}, ${vorname}`:nachname;
   try {
     const res=await api("addPerson",{name,abteilung:position});
@@ -688,7 +768,7 @@ async function personAnlegen() {
       allePersonen=sortNachname([...allePersonen,{id:res.id,nachname,vorname,position}]);
       document.getElementById("new-nachname").value="";
       document.getElementById("new-vorname").value="";
-      document.getElementById("new-abt").value="";
+      document.getElementById("new-abt").selectedIndex=0;
       document.getElementById("add-error").textContent="";
       renderPersonenverwaltung(); renderListe();
       toast(`${name} angelegt`);
