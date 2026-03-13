@@ -123,8 +123,11 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .error-msg{color:var(--red);font-size:14px;margin-top:8px;min-height:20px}
-.btn-working{animation:btnpulse 0.9s ease-in-out infinite;pointer-events:none;opacity:0.7}
-@keyframes btnpulse{0%,100%{transform:scale(1)}50%{transform:scale(0.96);opacity:0.5}}
+.btn-working{pointer-events:none;opacity:0.5}
+.modal-status{font-size:15px;font-weight:600;text-align:center;min-height:24px;margin-bottom:10px;animation:statusblink 0.5s ease-in-out infinite}
+.modal-status.save{color:var(--green)}
+.modal-status.del{color:var(--red)}
+@keyframes statusblink{0%,100%{opacity:1}50%{opacity:0.2}}
 
 @media(max-width:480px){
   body{font-size:18px}
@@ -265,6 +268,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     </div>
     <div class="field"><label>Position</label><input type="text" id="edit-position" placeholder="z.B. Kameraassistenz"></div>
     <div class="error-msg" id="edit-error"></div>
+    <div class="modal-status" id="modal-status" style="display:none"></div>
     <div style="display:flex;gap:10px;margin-top:8px">
       <button class="btn btn-primary btn-sm" id="edit-save-btn" onclick="editSpeichern()" style="width:auto;flex:1">Speichern</button>
       <button class="btn btn-ghost btn-sm" onclick="editSchliessen()">Abbrechen</button>
@@ -492,6 +496,11 @@ function editOeffnen(id) {
 
 function editSchliessen() {
   document.getElementById("edit-modal").style.display = "none";
+  document.getElementById("modal-status").style.display = "none";
+  const saveBtn = document.getElementById("edit-save-btn");
+  const delBtn  = document.getElementById("edit-del-btn");
+  if (saveBtn) { saveBtn.classList.remove("btn-working"); }
+  if (delBtn)  { delBtn.classList.remove("btn-working"); delBtn.dataset.confirm="0"; delBtn.textContent="Löschen"; }
   editId = null;
 }
 
@@ -503,7 +512,10 @@ async function editSpeichern() {
   const name = vorname ? `${nachname}, ${vorname}` : nachname;
   const btn = document.getElementById("edit-save-btn");
   btn.classList.add("btn-working");
-  btn.textContent = "Speichere…";
+  const status = document.getElementById("modal-status");
+  status.textContent = "Ich speichere…";
+  status.className = "modal-status save";
+  status.style.display = "block";
   try {
     const res = await api("editPerson", { id: editId, name, abteilung: position });
     if (res.ok) {
@@ -516,12 +528,12 @@ async function editSpeichern() {
     } else {
       document.getElementById("edit-error").textContent = res.error;
       btn.classList.remove("btn-working");
-      btn.textContent = "Speichern";
+      status.style.display = "none";
     }
   } catch(e) {
     document.getElementById("edit-error").textContent = "Verbindungsfehler";
     btn.classList.remove("btn-working");
-    btn.textContent = "Speichern";
+    status.style.display = "none";
   }
 }
 
@@ -540,7 +552,10 @@ async function personLoeschen() {
   }
   btn.dataset.confirm = "0";
   btn.classList.add("btn-working");
-  btn.textContent = "Lösche…";
+  const status = document.getElementById("modal-status");
+  status.textContent = "Ich lösche…";
+  status.className = "modal-status del";
+  status.style.display = "block";
   try {
     const res = await api("deletePerson", { id: editId });
     if (res.ok) {
@@ -552,12 +567,12 @@ async function personLoeschen() {
     } else {
       document.getElementById("edit-error").textContent = res.error;
       btn.classList.remove("btn-working");
-      btn.textContent = "Löschen";
+      status.style.display = "none";
     }
   } catch(e) {
     document.getElementById("edit-error").textContent = "Verbindungsfehler";
     btn.classList.remove("btn-working");
-    btn.textContent = "Löschen";
+    status.style.display = "none";
   }
 }
 
