@@ -485,9 +485,9 @@ async function editSpeichern() {
   try {
     const res = await api("editPerson", { id: editId, name, abteilung: position });
     if (res.ok) {
-      const idx = allePersonen.findIndex(p => p.id === editId);
-      if (idx !== -1) allePersonen[idx] = { ...allePersonen[idx], nachname, vorname, position };
-      allePersonen = sortNachname(allePersonen);
+      // neu vom Server laden damit alles konsistent ist
+      const res2 = await api("getPersonen");
+      if (res2.ok) allePersonen = sortNachname(mapPersonen(res2.personen));
       renderPersonenverwaltung();
       renderListe();
       editSchliessen();
