@@ -74,21 +74,28 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--border);border:none;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--muted);line-height:1;padding:0}
 .search-clear:hover{background:var(--border2);color:var(--text)}
 
-.alpha-divider{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--border2);letter-spacing:.12em;padding:12px 4px 4px;user-select:none}
+.alpha-divider{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--border2);letter-spacing:.12em;padding:8px 4px 2px;user-select:none}
 
-.personen-list{display:flex;flex-direction:column;gap:3px}
-.person-row{display:flex;align-items:center;gap:14px;padding:13px 14px;border-radius:var(--r);border:1.5px solid transparent;background:var(--surface);cursor:pointer;transition:background .1s,border-color .1s;user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
+.list-wrap{display:flex;gap:0;position:relative}
+.personen-list{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.person-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);border:1.5px solid transparent;background:var(--surface);cursor:pointer;transition:background .1s,border-color .1s;user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
 .person-row:active{opacity:.85}
 .person-row.checked{background:var(--green-bg);border-color:var(--green-brd)}
 
-.checkbox{width:26px;height:26px;border-radius:6px;border:2px solid var(--border2);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;font-size:15px;font-weight:600}
+/* Alphabet-Sidebar */
+.alpha-sidebar{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 2px;gap:1px;position:sticky;top:0;align-self:flex-start;margin-left:6px;background:transparent;z-index:10;-webkit-tap-highlight-color:transparent;user-select:none}
+.alpha-sidebar span{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--muted);padding:1px 5px;border-radius:4px;cursor:pointer;line-height:1.6;min-width:20px;text-align:center}
+.alpha-sidebar span:active,.alpha-sidebar span.active{background:var(--accent);color:#fff}
+.alpha-sidebar span.inactive{color:var(--border)}
+
+.checkbox{width:22px;height:22px;border-radius:5px;border:2px solid var(--border2);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;font-size:13px;font-weight:600}
 .person-row.checked .checkbox{background:var(--green);border-color:var(--green);color:#fff}
 
 .person-info{flex:1;min-width:0}
-.person-name{font-size:17px;line-height:1.3}
+.person-name{font-size:16px;line-height:1.2}
 .person-name .nachname{font-weight:600;color:var(--text)}
 .person-name .vorname{font-weight:400;color:var(--muted)}
-.person-pos{font-size:13px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.person-pos{font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:1px}
 .person-row.checked .person-name .nachname{color:var(--accent)}
 .person-row.checked .person-pos{color:var(--accent);opacity:.7}
 
@@ -133,10 +140,10 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 @media(max-width:480px){
   body{font-size:18px}
-  .person-name{font-size:18px}
-  .person-pos{font-size:14px}
-  .checkbox{width:28px;height:28px;font-size:16px}
-  .person-row{padding:15px 14px}
+  .person-name{font-size:16px}
+  .person-pos{font-size:12px}
+  .checkbox{width:22px;height:22px;font-size:13px}
+  .person-row{padding:9px 10px}
   .tab{font-size:14px;padding:13px 12px}
   .count-num{font-size:36px}
 }
@@ -146,7 +153,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.7</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.8</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -161,7 +168,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.7</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.8</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -200,7 +207,10 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
       <input type="text" id="suche" placeholder="Name suchen…" oninput="suchUpdate()">
       <button class="search-clear" id="suche-clear" onclick="suchLeeren()" style="display:none">×</button>
     </div>
-    <div class="personen-list" id="personen-list"></div>
+    <div class="list-wrap">
+      <div class="personen-list" id="personen-list"></div>
+      <div class="alpha-sidebar" id="alpha-sidebar"></div>
+    </div>
   </div>
 
   <!-- PERSONEN -->
@@ -410,11 +420,7 @@ async function datumWechseln() {
 function suchUpdate() {
   const val = document.getElementById("suche").value;
   document.getElementById("suche-clear").style.display = val ? "flex" : "none";
-  // Scroll-Position einfrieren während renderListe() DOM neu aufbaut
-  const panel = document.getElementById("tab-anwesenheit");
-  const scrollY = panel.scrollTop;
-  renderListe();
-  requestAnimationFrame(() => { panel.scrollTop = scrollY; });
+  filterListe(val.toLowerCase());
 }
 
 function suchLeeren() {
@@ -432,21 +438,23 @@ document.getElementById("suche").addEventListener("focus", () => {
 });
 
 function renderListe() {
-  const suche=document.getElementById("suche").value.toLowerCase();
-  // Nur Wortanfänge: Nachname, Vorname oder Position beginnt mit Suchbegriff
-  const gefiltert=suche
-    ? allePersonen.filter(p=>{
-        const wortAnfang = s => s.toLowerCase().split(/\s+/).some(w=>w.startsWith(suche));
-        return wortAnfang(p.nachname) || wortAnfang(p.vorname||"") || wortAnfang(p.position||"");
-      })
-    : allePersonen;
-
+  const container = document.getElementById("personen-list");
+  // DOM komplett aufbauen (nur bei Datumswechsel / Login)
   let letzterBuchstabe="";
-  const html=gefiltert.map(p=>{
+  const buchstaben=new Set();
+  const html=allePersonen.map(p=>{
     const an=anwesendHeute.has(p.id);
     let div="";
-    if(!suche){const b=p.nachname[0].toUpperCase();if(b!==letzterBuchstabe){letzterBuchstabe=b;div=`<div class="alpha-divider">${b}</div>`;}}
-    return div+`<div class="person-row${an?" checked":""}" onclick="toggle('${p.id}')">
+    const b=p.nachname[0]?.toUpperCase()||"#";
+    if(b!==letzterBuchstabe){
+      letzterBuchstabe=b; buchstaben.add(b);
+      div=`<div class="alpha-divider" id="alpha-${b}">${b}</div>`;
+    }
+    return div+`<div class="person-row${an?" checked":""}" data-id="${p.id}"
+      data-n="${p.nachname.toLowerCase()}"
+      data-v="${(p.vorname||"").toLowerCase()}"
+      data-p="${(p.position||"").toLowerCase()}"
+      onclick="toggle('${p.id}')">
       <div class="checkbox">${an?"✓":""}</div>
       <div class="person-info">
         <div class="person-name"><span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span></div>
@@ -454,10 +462,45 @@ function renderListe() {
       </div>
     </div>`;
   }).join("");
+  container.innerHTML=html||'<div style="color:var(--muted);padding:16px 4px;font-size:15px">Keine Einträge.</div>';
 
-  document.getElementById("personen-list").innerHTML=html||'<div style="color:var(--muted);padding:16px 4px;font-size:15px">Keine Einträge.</div>';
+  // Alphabet-Sidebar aufbauen
+  const sidebar=document.getElementById("alpha-sidebar");
+  const alle="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  sidebar.innerHTML=alle.map(b=>
+    `<span class="${buchstaben.has(b)?"":"inactive"}" onclick="alphaScroll('${b}')">${b}</span>`
+  ).join("");
+
   document.getElementById("count-anwesend").textContent=anwesendHeute.size;
   document.getElementById("count-gesamt").textContent=allePersonen.length;
+  filterListe(document.getElementById("suche").value.toLowerCase());
+}
+
+function filterListe(suche) {
+  const container=document.getElementById("personen-list");
+  const sidebar=document.getElementById("alpha-sidebar");
+  if(!suche) {
+    container.querySelectorAll(".person-row,.alpha-divider").forEach(el=>el.style.display="");
+    sidebar.style.display="flex";
+    return;
+  }
+  sidebar.style.display="none";
+  container.querySelectorAll(".alpha-divider").forEach(el=>el.style.display="none");
+  container.querySelectorAll(".person-row").forEach(row=>{
+    const wortAnfang=s=>s.split(" ").some(w=>w.startsWith(suche));
+    const treffer=wortAnfang(row.dataset.n)||wortAnfang(row.dataset.v)||wortAnfang(row.dataset.p);
+    row.style.display=treffer?"":"none";
+  });
+}
+
+function alphaScroll(b) {
+  const el=document.getElementById("alpha-"+b);
+  if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+  // Kurzer visueller Feedback
+  document.querySelectorAll(".alpha-sidebar span").forEach(s=>{
+    s.classList.toggle("active", s.textContent===b);
+  });
+  setTimeout(()=>document.querySelectorAll(".alpha-sidebar span").forEach(s=>s.classList.remove("active")),400);
 }
 
 function toggle(id) {
