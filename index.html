@@ -266,9 +266,9 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     <div class="field"><label>Position</label><input type="text" id="edit-position" placeholder="z.B. Kameraassistenz"></div>
     <div class="error-msg" id="edit-error"></div>
     <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn btn-primary btn-sm" onclick="editSpeichern()" style="width:auto;flex:1">Speichern</button>
+      <button class="btn btn-primary btn-sm" id="edit-save-btn" onclick="editSpeichern()" style="width:auto;flex:1">Speichern</button>
       <button class="btn btn-ghost btn-sm" onclick="editSchliessen()">Abbrechen</button>
-      <button class="btn btn-sm" onclick="personLoeschen()" style="background:var(--red-bg);color:var(--red);border:1.5px solid #f0c0bc">Löschen</button>
+      <button class="btn btn-sm" id="edit-del-btn" onclick="personLoeschen()" style="background:var(--red-bg);color:var(--red);border:1.5px solid #f0c0bc">Löschen</button>
     </div>
   </div>
 </div>
@@ -501,7 +501,7 @@ async function editSpeichern() {
   const position = document.getElementById("edit-position").value.trim();
   if (!nachname) { document.getElementById("edit-error").textContent = "Nachname erforderlich"; return; }
   const name = vorname ? `${nachname}, ${vorname}` : nachname;
-  const btn = document.querySelector("#edit-modal .btn-primary");
+  const btn = document.getElementById("edit-save-btn");
   btn.classList.add("btn-working");
   btn.textContent = "Speichere…";
   try {
@@ -529,8 +529,16 @@ async function personLoeschen() {
   const p = allePersonen.find(x => x.id === editId);
   if (!p) return;
   const name = p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname;
-  if (!confirm(`"${name}" wirklich löschen?`)) return;
-  const btn = document.querySelector("#edit-modal .btn-sm:last-child");
+  // Eigene Bestätigung statt confirm() (funktioniert zuverlässig auf Mobile)
+  document.getElementById("edit-error").textContent = "";
+  const btn = document.getElementById("edit-del-btn");
+  if (btn.dataset.confirm !== "1") {
+    btn.dataset.confirm = "1";
+    btn.textContent = "Wirklich löschen?";
+    setTimeout(() => { btn.dataset.confirm="0"; btn.textContent="Löschen"; }, 3000);
+    return;
+  }
+  btn.dataset.confirm = "0";
   btn.classList.add("btn-working");
   btn.textContent = "Lösche…";
   try {
