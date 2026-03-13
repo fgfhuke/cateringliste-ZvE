@@ -280,6 +280,13 @@ let SESSION_PW = "", allePersonen = [], anwesendHeute = new Set(), exportDaten =
 
 function heute() { return new Date().toISOString().split("T")[0]; }
 function formatDatum(d) { if(!d)return""; const[y,m,t]=d.split("-"); return`${t}.${m}.${y}`; }
+function formatDatumMitTag(d) {
+  if(!d)return"";
+  const tage=["So","Mo","Di","Mi","Do","Fr","Sa"];
+  const dt=new Date(d+"T12:00:00");
+  const[y,m,t]=d.split("-");
+  return`${tage[dt.getDay()]} ${t}.${m}.${y}`;
+}
 
 function toast(msg, ms=2200) {
   const el=document.getElementById("toast");
@@ -360,13 +367,18 @@ document.querySelectorAll(".tab").forEach(tab=>{
 // ── Anwesenheit ──
 function heuteDatum() {
   document.getElementById("datum-input").value=heute();
-  document.getElementById("topbar-date").textContent=formatDatum(heute());
+  document.getElementById("topbar-date").textContent=formatDatumMitTag(heute());
 }
 
 async function datumWechseln() {
   const datum=document.getElementById("datum-input").value;
   if(!datum)return;
-  document.getElementById("topbar-date").textContent=formatDatum(datum);
+  // Kalender sofort schließen (Mobile + Desktop)
+  const inp = document.getElementById("datum-input");
+  inp.blur();
+  inp.setAttribute("readonly", true);
+  setTimeout(() => inp.removeAttribute("readonly"), 100);
+  document.getElementById("topbar-date").textContent=formatDatumMitTag(datum);
   setAutosaveStatus("laden");
   anwesendHeute=new Set();
   try {
