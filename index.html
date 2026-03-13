@@ -15,7 +15,7 @@
   --r:8px; --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.06);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100dvh;font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100dvh;font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden;height:100dvh}
 
 #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px}
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:44px 36px;width:100%;max-width:380px;box-shadow:var(--shadow)}
@@ -37,7 +37,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .btn-icon{padding:8px;background:transparent;color:var(--muted);border:none;font-size:20px;cursor:pointer;line-height:1}
 .btn-icon:hover{color:var(--text)}
 
-#app{display:none;min-height:100dvh;flex-direction:column;background:var(--bg)}
+#app{display:none;height:100dvh;flex-direction:column;background:var(--bg);overflow:hidden}
 #app.active{display:flex}
 
 .topbar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 16px;height:58px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
@@ -49,7 +49,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .tab:hover:not(.active){color:var(--text)}
 
-.panel{display:none;flex:1;overflow-y:auto;padding-bottom:32px;scroll-padding-top:16px}
+.panel{display:none;flex:1;overflow-y:auto;padding-bottom:120px;scroll-padding-top:16px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .panel.active{display:block}
 .content{padding:16px;max-width:680px;margin:0 auto}
 
@@ -146,7 +146,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.4</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.5</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -161,7 +161,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.4</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.5</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -410,11 +410,7 @@ async function datumWechseln() {
 function suchUpdate() {
   const val = document.getElementById("suche").value;
   document.getElementById("suche-clear").style.display = val ? "flex" : "none";
-  // Scroll-Position merken und wiederherstellen (verhindert Sprung auf Mobile)
-  const panel = document.getElementById("tab-anwesenheit");
-  const scrollY = panel.scrollTop;
   renderListe();
-  panel.scrollTop = scrollY;
 }
 
 function suchLeeren() {
@@ -422,6 +418,19 @@ function suchLeeren() {
   document.getElementById("suche-clear").style.display = "none";
   renderListe();
   document.getElementById("suche").blur();
+}
+
+// Tastatur-Handling: Suchfeld bleibt sichtbar wenn Tastatur aufgeht
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    const suche = document.getElementById("suche");
+    if (document.activeElement === suche) {
+      // Kurz warten bis Tastatur fertig animiert ist
+      setTimeout(() => {
+        suche.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  });
 }
 
 function renderListe() {
