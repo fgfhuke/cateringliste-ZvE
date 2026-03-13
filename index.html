@@ -630,7 +630,7 @@
 <script>
 // ══ KONFIGURATION ══════════════════════════════════════════
 // HIER DIE WEB-APP-URL EINTRAGEN:
-const API_URL = "https://script.google.com/macros/s/AKfycbx09Sf9puRH1nMbu8IhySjgCmqnDq4RrWZYBwnrMt863_c7GW5Lg-pn11WVQGME1C7u6g/exechttps://script.google.com/macros/s/AKfycbx09Sf9puRH1nMbu8IhySjgCmqnDq4RrWZYBwnrMt863_c7GW5Lg-pn11WVQGME1C7u6g/exec";
+const API_URL = "HIER_DEINE_GOOGLE_APPS_SCRIPT_URL_EINTRAGEN";
 // ════════════════════════════════════════════════════════════
 
 // ── Demo-Modus (für lokale Designvorschau) ──
@@ -721,13 +721,19 @@ function toast(msg, dauer = 2000) {
 }
 
 async function api(action, extra = {}) {
-  const body = { password: SESSION_PW, action, ...extra };
-  const r = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: { "Content-Type": "application/json" }
+  // Google Apps Script: GET mit URL-Parametern (CORS-sicher)
+  const params = new URLSearchParams({
+    password: SESSION_PW,
+    action,
+    data: encodeURIComponent(JSON.stringify(extra))
   });
-  return r.json();
+  const r = await fetch(`${API_URL}?${params}`, {
+    method: "GET",
+    redirect: "follow"
+  });
+  const text = await r.text();
+  try { return JSON.parse(text); }
+  catch(e) { throw new Error("Ungültige Antwort: " + text.slice(0, 100)); }
 }
 
 // ── Login ──
