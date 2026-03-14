@@ -167,7 +167,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .stepper-btn:active{background:var(--border)}
 .stepper-val{flex:1;text-align:center;font-size:22px;font-weight:700;font-family:var(--mono);border:none;background:transparent;color:var(--text);min-width:0;padding:0;width:100%}
 .stepper-val:focus{outline:none}
-.row-edit-btn{background:none;border:none;color:var(--border2);font-size:14px;cursor:pointer;padding:4px 8px;flex-shrink:0;line-height:1}
+.row-edit-btn{background:none;border:none;color:var(--border2);font-size:20px;cursor:pointer;padding:2px 6px;flex-shrink:0;line-height:1;vertical-align:middle}
 .row-edit-btn:hover{color:var(--muted)}
 </style>
 </head>
@@ -175,7 +175,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.0</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.1</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -190,7 +190,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.0</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.1</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -385,7 +385,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 const API_URL = "https://script.google.com/macros/s/AKfycbxS-9nprjfCnUKnZUm8_8S3cZ6trVLJemNg_BERDj2PPIK5uJH2Te62ze4_j7fAuEY9ng/exec";
 // ═══════════════════════════════════════════════════════════
 
-let SESSION_PW = "", allePersonen = [], anwesendHeute = new Set(), exportDaten = [], autosaveTimer = null, PROJEKT_KUERZEL = "", sortierung = "nachname";
+let SESSION_PW = "", allePersonen = [], anwesendHeute = new Set(), exportDaten = [], autosaveTimer = null, PROJEKT_KUERZEL = "", sortierung = "nachname", personenMitTeilnahme = new Set();
 
 function heute() { return new Date().toISOString().split("T")[0]; }
 function formatDatum(d) { if(!d)return""; const[y,m,t]=d.split("-"); return`${t}.${m}.${y}`; }
@@ -467,6 +467,8 @@ async function login() {
       document.getElementById("login-screen").style.display="none";
       document.getElementById("app").classList.add("active");
       allePersonen=sortNachname(mapPersonen(res.personen));
+      // Alle Personen mit jemals einer Teilnahme laden
+      if(res.personenMitTeilnahme) personenMitTeilnahme = new Set(res.personenMitTeilnahme);
       heuteDatum(); await datumWechseln();
       renderPersonenverwaltung();
       document.getElementById("monat-input").value=heute().slice(0,7);
@@ -588,7 +590,7 @@ function renderListe() {
         div=`<div class="alpha-divider" id="alpha-${b}">${b}</div>`;
       }
     }
-    const canEdit = p.id.startsWith("P") && !anwesendHeute.has(p.id);
+    const canEdit = p.id.startsWith("P") && !personenMitTeilnahme.has(p.id);
     // Namensdarstellung je nach Sortierung
     let nameHTML;
     if(sortierung==="vorname") {
@@ -680,7 +682,12 @@ async function autosave() {
     .map(p=>({id:p.id,name:p.vorname?`${p.nachname}, ${p.vorname}`:p.nachname,abteilung:p.position||""}));
   try {
     const res=await api("setTeilnahme",{datum,eintraege,komparsen,gaeste});
-    if(res.ok) setAutosaveStatus("saved"); else setAutosaveStatus("err");
+    if(res.ok) {
+      setAutosaveStatus("saved");
+      // Anwesende zu personenMitTeilnahme hinzufügen
+      anwesendHeute.forEach(id => personenMitTeilnahme.add(id));
+      renderListe(); // Stifte ausblenden
+    } else { setAutosaveStatus("err"); }
   } catch(e) { setAutosaveStatus("err"); }
 }
 
