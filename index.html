@@ -175,7 +175,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.9</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.0</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -190,7 +190,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.9</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.0</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -312,8 +312,12 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
         </select>
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-primary btn-sm" onclick="personAnlegen()" style="width:auto;flex:1">Anlegen</button>
-        <button class="btn btn-ghost btn-sm" onclick="toggleAddCard()">Abbrechen</button>
+        <button class="btn btn-primary btn-sm" id="add-save-btn" onclick="personAnlegen()" style="width:auto;flex:1">Anlegen</button>
+        <button class="btn btn-ghost btn-sm" onclick="addAbbrechen()">Abbrechen</button>
+      </div>
+      <div class="autosave-bar" id="add-status-bar" style="display:none;padding:6px 0 0">
+        <div class="autosave-dot saving" id="add-status-dot"></div>
+        <span id="add-status-text">Ich speichere…</span>
       </div>
       <div class="error-msg" id="add-error"></div>
     </div>
@@ -584,12 +588,12 @@ function renderListe() {
         div=`<div class="alpha-divider" id="alpha-${b}">${b}</div>`;
       }
     }
-    const canEdit = !anwesendHeute.has(p.id) && p.id.startsWith("P");
+    const canEdit = p.id.startsWith("P") && !anwesendHeute.has(p.id);
     // Namensdarstellung je nach Sortierung
     let nameHTML;
     if(sortierung==="vorname") {
-      // Vorname fett, Nachname grau, kein Komma
-      nameHTML=`<span class="nachname" style="font-weight:400;color:var(--muted)">${p.vorname||""}</span>${p.vorname?" ":""}<span class="vorname" style="font-weight:600;color:var(--text)">${p.nachname}</span>`;
+      // Vorname FETT+dunkel, Nachname normal+grau, kein Komma
+      nameHTML=`<span style="font-weight:600;color:var(--text)">${p.vorname||p.nachname}</span>${p.vorname?` <span style="font-weight:400;color:var(--muted)">${p.nachname}</span>`:""}`;
     } else {
       nameHTML=`<span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span>`;
     }
@@ -823,6 +827,15 @@ function toggleAddCard() {
   document.getElementById("add-error").textContent="";
 }
 
+function addAbbrechen() {
+  toggleAddCard();
+  // Zurück zur Teilnahme-Seite
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelector('[data-tab="anwesenheit"]').classList.add("active");
+  document.getElementById("tab-anwesenheit").classList.add("active");
+}
+
 document.getElementById("new-nachname").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("new-vorname").focus();});
 document.getElementById("new-vorname").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("new-position").focus();});
 document.getElementById("new-position").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("new-abt").focus();});
@@ -836,6 +849,10 @@ async function personAnlegen() {
   const position=abteilung; // Abteilung ist die Hauptkategorie
   if(!nachname){document.getElementById("add-error").textContent="Nachname / Firma erforderlich";return;}
   const name=vorname?`${nachname}, ${vorname}`:nachname;
+  const saveBtn=document.getElementById("add-save-btn");
+  const statusBar=document.getElementById("add-status-bar");
+  saveBtn.disabled=true;
+  statusBar.style.display="flex";
   try {
     const res=await api("addPerson",{name,abteilung:position,rolle:posRolle});
     if(res.ok){
@@ -861,6 +878,7 @@ async function personAnlegen() {
       toast(`${name} angelegt`);
     } else { document.getElementById("add-error").textContent=res.error; }
   } catch(e) { document.getElementById("add-error").textContent="Verbindungsfehler"; }
+  finally { saveBtn.disabled=false; document.getElementById("add-status-bar").style.display="none"; }
 }
 
 // ── Import ──
