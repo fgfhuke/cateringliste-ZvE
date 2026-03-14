@@ -6,6 +6,8 @@
 <title>Catering Liste</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root {
   --bg:#f5f4f0; --surface:#fff; --surface2:#eeede8; --border:#d0cec6; --border2:#b8b5ac;
@@ -133,20 +135,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .export-table .row-group td{background:#e8e6de;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#555;padding:3px 6px;border-bottom:1px solid var(--border2);border-top:1.5px solid var(--border2)}
 .export-table .row-group td.col-name{background:#e8e6de;position:sticky;left:0;z-index:2}
 .anzahl-badge{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent)}
-/* PDF-Druck */
-@media print {
-  body{background:#fff}
-  .topbar,.tabs,.monat-bar,#csv-btn,#pdf-btn,.autosave-bar{display:none!important}
-  .panel{display:block!important;overflow:visible!important;height:auto!important}
-  #tab-export{padding:0!important}
-  .export-wrap{overflow:visible!important;border:none!important;box-shadow:none!important}
-  .export-table th,.export-table td{position:static!important}
-  .export-table{font-size:8px;width:100%}
-  .export-table th{font-size:8px;padding:2px 3px}
-  .export-table td{padding:1px 3px}
-  .export-table td.col-name,.export-table th.col-name{min-width:80px;max-width:100px}
-  @page{size:A4 landscape;margin:8mm}
-}
+
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--surface);border-radius:24px;padding:12px 24px;font-size:15px;font-weight:500;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.18)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -175,7 +164,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.2</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.3</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -190,7 +179,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.2</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.3</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -962,16 +951,99 @@ function csvExport() {
 }
 
 function pdfExport() {
-  const monat = document.getElementById("monat-input").value;
-  const titel = `Catering ${PROJEKT_KUERZEL} ${monat}`;
-  // Drucken mit Titel
-  const orig = document.title;
-  document.title = titel;
-  // Alle anderen Panels ausblenden für Druck
-  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-  document.getElementById("tab-export").classList.add("active");
-  window.print();
-  document.title = orig;
+  if(!exportDaten.length) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:"landscape", unit:"mm", format:"a4" });
+
+  const monat   = document.getElementById("monat-input").value;
+  const projekt  = PROJEKT_KUERZEL ? ` · ${PROJEKT_KUERZEL}` : "";
+  const titel    = `Catering${projekt} — ${monat}`;
+  const wochentage = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+  const abtReihenfolge = ["PRODUZENTEN","REGIE","PRODUKTION","KAMERA","KAMERABÜHNE","KOSTÜM","LICHT","MASKENBILD","SZENENBILD","TON","TURBINE STUDIOS HAUPTHAUS","CAST","GÄSTE","Komparsen","Ohne Abteilung"];
+
+  const alleTage = [...new Set(exportDaten.flatMap(e=>e.tage))].sort();
+
+  // Nach Abteilung gruppieren
+  const gruppen = {};
+  exportDaten.forEach(e => {
+    const abt = e.abteilung || "Ohne Abteilung";
+    if(!gruppen[abt]) gruppen[abt] = [];
+    gruppen[abt].push(e);
+  });
+  const sortierteGruppen = Object.keys(gruppen).sort((a,b) => {
+    const ia=abtReihenfolge.indexOf(a), ib=abtReihenfolge.indexOf(b);
+    if(ia===-1&&ib===-1) return a.localeCompare(b,"de");
+    if(ia===-1) return 1; if(ib===-1) return -1;
+    return ia-ib;
+  });
+
+  // Spalten-Header
+  const kopf = ["Name", "∑", ...alleTage.map(t => {
+    const d = new Date(t+"T12:00:00");
+    return wochentage[d.getDay()]+"\n"+t.split("-")[2];
+  })];
+
+  // Zeilen aufbauen
+  const body = [];
+  sortierteGruppen.forEach(abt => {
+    // Gruppenüberschrift
+    body.push([{ content: abt, colSpan: alleTage.length+2, styles: {
+      fillColor:[220,218,212], textColor:[80,80,80],
+      fontStyle:"bold", fontSize:7, cellPadding:2
+    }}]);
+    gruppen[abt].sort((a,b)=>a.name.localeCompare(b.name,"de")).forEach(e => {
+      body.push([
+        e.name,
+        e.anzahl,
+        ...alleTage.map(t => e.tage.includes(t) ? "✓" : "")
+      ]);
+    });
+  });
+
+  // Titel
+  doc.setFontSize(11);
+  doc.setFont("helvetica","bold");
+  doc.text(titel, 10, 10);
+  doc.setFontSize(8);
+  doc.setFont("helvetica","normal");
+  doc.setTextColor(120);
+  doc.text(`Erstellt: ${new Date().toLocaleDateString("de-DE")}`, 10, 16);
+  doc.setTextColor(0);
+
+  // Tabelle
+  doc.autoTable({
+    head: [kopf],
+    body: body,
+    startY: 20,
+    margin: { left:8, right:8 },
+    styles: { fontSize:7, cellPadding:1.5, overflow:"ellipsize", halign:"center" },
+    columnStyles: {
+      0: { halign:"left", cellWidth:35, fontStyle:"bold" },
+      1: { cellWidth:8,  fontStyle:"bold", textColor:[26,107,60], fillColor:[232,244,237] },
+    },
+    headStyles: {
+      fillColor:[238,237,232], textColor:[80,80,80],
+      fontStyle:"bold", fontSize:7, halign:"center"
+    },
+    headStyles: { fillColor:[238,237,232], textColor:[60,60,60], fontSize:6.5 },
+    didParseCell: (data) => {
+      // Haken grün färben
+      if(data.cell.raw === "✓") {
+        data.cell.styles.textColor = [26,107,60];
+        data.cell.styles.fontStyle = "bold";
+      }
+      // ∑-Spalte
+      if(data.column.index===1 && data.section==="body" && typeof data.cell.raw === "number") {
+        data.cell.styles.textColor = [26,107,60];
+        data.cell.styles.fillColor = [232,244,237];
+        data.cell.styles.fontStyle = "bold";
+      }
+    },
+    alternateRowStyles: { fillColor:[250,250,248] },
+  });
+
+  doc.save(`catering_${monat}${projekt.replace(" · ","_")}.pdf`);
+  toast("PDF exportiert");
 }
 </script>
 </body>
