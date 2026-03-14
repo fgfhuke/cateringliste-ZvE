@@ -149,22 +149,32 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .modal-status.del{color:var(--red)}
 @keyframes statusblink{0%,100%{opacity:1}50%{opacity:0.2}}
 
-@media(max-width:480px){
+@media(max-width:600px){
   body{font-size:18px}
-  .person-name{font-size:16px}
+  .person-name{font-size:18px}
   .person-pos{font-size:12px}
   .checkbox{width:22px;height:22px;font-size:13px}
   .person-row{padding:9px 10px}
-  .tab{font-size:14px;padding:13px 12px}
+  .tab{font-size:13px;padding:10px 10px}
   .count-num{font-size:36px}
+  .mobile-hide{display:none!important}
+  .tabs{padding:0 4px}
+  .tab-sort-label{display:none}
 }
+.stepper{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.stepper-btn{width:44px;height:44px;border:none;background:var(--surface2);font-size:24px;font-weight:300;cursor:pointer;color:var(--text);flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;line-height:1}
+.stepper-btn:active{background:var(--border)}
+.stepper-val{flex:1;text-align:center;font-size:22px;font-weight:700;font-family:var(--mono);border:none;background:transparent;color:var(--text);min-width:0;padding:0;width:100%}
+.stepper-val:focus{outline:none}
+.row-edit-btn{background:none;border:none;color:var(--border2);font-size:14px;cursor:pointer;padding:4px 8px;flex-shrink:0;line-height:1}
+.row-edit-btn:hover{color:var(--muted)}
 </style>
 </head>
 <body>
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.7</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.8</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -179,16 +189,17 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.7</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.8</div>
+    <button class="btn-icon" onclick="schnellNeuPerson()" title="Person anlegen" style="font-size:24px;font-weight:300;color:var(--accent)">+</button>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
     <div class="tab active" data-tab="anwesenheit">Anwesenheit</div>
-    <div class="tab" data-tab="personen">Personen</div>
-    <div class="tab" data-tab="export">Übersicht</div>
+    <div class="tab mobile-hide" data-tab="personen">Personen</div>
+    <div class="tab mobile-hide" data-tab="export">Übersicht</div>
     <div style="flex:1"></div>
     <div style="display:flex;align-items:center;gap:6px;padding:0 8px">
-      <span style="font-size:12px;color:var(--muted);white-space:nowrap">Sortierung</span>
+      <span class="tab-sort-label" style="font-size:12px;color:var(--muted);white-space:nowrap">Sortierung</span>
       <select id="sort-select" onchange="sortierungWechseln()" style="font-size:13px;padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-family:var(--sans)">
         <option value="nachname">Nachname</option>
         <option value="vorname">Vorname</option>
@@ -198,22 +209,35 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   </div>
 
   <!-- ANWESENHEIT -->
-  <div class="panel active content" id="tab-anwesenheit">
-    <br>
-    <div class="date-bar">
+  <div class="panel active content" id="tab-anwesenheit" style="padding-top:10px">
+    <div class="date-bar" style="margin-bottom:8px">
       <label>Datum</label>
       <div style="flex:1;position:relative">
         <input type="date" id="datum-input" onchange="datumWechseln()" style="position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;top:0;left:0;z-index:1">
-        <div id="datum-anzeige" onclick="document.getElementById('datum-input').showPicker?document.getElementById('datum-input').showPicker():document.getElementById('datum-input').click()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:16px;cursor:pointer;color:var(--text);user-select:none">–</div>
+        <div id="datum-anzeige" onclick="document.getElementById('datum-input').showPicker?document.getElementById('datum-input').showPicker():document.getElementById('datum-input').click()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px;font-size:16px;cursor:pointer;color:var(--text);user-select:none">–</div>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="heuteDatum()">Heute</button>
     </div>
-    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:12px;margin-bottom:10px;box-shadow:var(--shadow)">
-      <label style="margin:0;white-space:nowrap;font-size:13px">Komparsen</label>
-      <input type="number" id="komparsen-input" min="0" placeholder="0" oninput="planAutosave()" style="flex:1;padding:8px 12px;font-size:17px;font-weight:600;max-width:120px">
-      <span style="font-size:13px;color:var(--muted)">Anzahl</span>
+    <!-- Stepper: Komparsen + Gäste -->
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <div style="flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px 10px;box-shadow:var(--shadow)">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Komparsen</div>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="stepperChange('komparsen-input',-1)">−</button>
+          <input class="stepper-val" type="number" id="komparsen-input" min="0" value="0" oninput="planAutosave()">
+          <button class="stepper-btn" onclick="stepperChange('komparsen-input',1)">+</button>
+        </div>
+      </div>
+      <div style="flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px 10px;box-shadow:var(--shadow)">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Gäste</div>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="stepperChange('gaeste-input',-1)">−</button>
+          <input class="stepper-val" type="number" id="gaeste-input" min="0" value="0" oninput="planAutosave()">
+          <button class="stepper-btn" onclick="stepperChange('gaeste-input',1)">+</button>
+        </div>
+      </div>
     </div>
-    <div class="autosave-bar">
+    <div class="autosave-bar" style="padding:2px 0 6px">
       <div class="autosave-dot" id="autosave-dot"></div>
       <span id="autosave-text">–</span>
     </div>
@@ -258,7 +282,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
       </div>
       <div class="error-msg" id="import-error"></div>
     </div>
-    <button class="toggle-btn" id="import-toggle-btn" onclick="toggleImportCard()">
+    <button class="toggle-btn mobile-hide" id="import-toggle-btn" onclick="toggleImportCard()">
       <span class="icon">↓</span> Liste importieren
     </button>
 
@@ -271,20 +295,19 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
       <div class="field"><label>Position / Rolle</label><input type="text" id="new-position" placeholder="z.B. 1. Kameraassistenz"></div>
       <div class="field"><label>Abteilung</label>
         <select id="new-abt">
-          <option value="">– Abteilung wählen –</option>
-          <option value="PRODUZENTEN">PRODUZENTEN</option>
-          <option value="REGIE">REGIE</option>
-          <option value="PRODUKTION">PRODUKTION</option>
-          <option value="KAMERA">KAMERA</option>
-          <option value="KAMERABÜHNE">KAMERABÜHNE</option>
-          <option value="KOSTÜM">KOSTÜM</option>
-          <option value="LICHT">LICHT</option>
-          <option value="MASKENBILD">MASKENBILD</option>
-          <option value="SZENENBILD">SZENENBILD</option>
-          <option value="TON">TON</option>
-          <option value="TURBINE STUDIOS HAUPTHAUS">TURBINE STUDIOS HAUPTHAUS</option>
-          <option value="CAST">CAST</option>
-          <option value="GÄSTE">GÄSTE</option>
+          <option value="">– Abteilung –</option>
+          <option value="01 Regie">01 Regie</option>
+          <option value="02 Produktion">02 Produktion</option>
+          <option value="03 Kamera / Ton">03 Kamera / Ton</option>
+          <option value="04 Kostüm">04 Kostüm</option>
+          <option value="05 Licht">05 Licht</option>
+          <option value="06 Maske">06 Maske</option>
+          <option value="07 Szenenbild">07 Szenenbild</option>
+          <option value="08 Produzenten">08 Produzenten</option>
+          <option value="09 Cast">09 Cast</option>
+          <option value="10 Komparsen">10 Komparsen</option>
+          <option value="11 Gäste">11 Gäste</option>
+          <option value="12 Sonstige">12 Sonstige</option>
         </select>
       </div>
       <div style="display:flex;gap:10px">
@@ -325,20 +348,19 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     </div>
     <div class="field"><label>Abteilung</label>
       <select id="edit-position">
-          <option value="">– Abteilung wählen –</option>
-          <option value="PRODUZENTEN">PRODUZENTEN</option>
-          <option value="REGIE">REGIE</option>
-          <option value="PRODUKTION">PRODUKTION</option>
-          <option value="KAMERA">KAMERA</option>
-          <option value="KAMERABÜHNE">KAMERABÜHNE</option>
-          <option value="KOSTÜM">KOSTÜM</option>
-          <option value="LICHT">LICHT</option>
-          <option value="MASKENBILD">MASKENBILD</option>
-          <option value="SZENENBILD">SZENENBILD</option>
-          <option value="TON">TON</option>
-          <option value="TURBINE STUDIOS HAUPTHAUS">TURBINE STUDIOS HAUPTHAUS</option>
-          <option value="CAST">CAST</option>
-          <option value="GÄSTE">GÄSTE</option>
+          <option value="">– Abteilung –</option>
+          <option value="01 Regie">01 Regie</option>
+          <option value="02 Produktion">02 Produktion</option>
+          <option value="03 Kamera / Ton">03 Kamera / Ton</option>
+          <option value="04 Kostüm">04 Kostüm</option>
+          <option value="05 Licht">05 Licht</option>
+          <option value="06 Maske">06 Maske</option>
+          <option value="07 Szenenbild">07 Szenenbild</option>
+          <option value="08 Produzenten">08 Produzenten</option>
+          <option value="09 Cast">09 Cast</option>
+          <option value="10 Komparsen">10 Komparsen</option>
+          <option value="11 Gäste">11 Gäste</option>
+          <option value="12 Sonstige">12 Sonstige</option>
         </select>
     </div>
     <div class="error-msg" id="edit-error"></div>
@@ -346,7 +368,6 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     <div style="display:flex;gap:10px;margin-top:8px">
       <button class="btn btn-primary btn-sm" id="edit-save-btn" onclick="editSpeichern()" style="width:auto;flex:1">Speichern</button>
       <button class="btn btn-ghost btn-sm" onclick="editSchliessen()">Abbrechen</button>
-      <button class="btn btn-sm" id="edit-del-btn" onclick="personLoeschen()" style="background:var(--red-bg);color:var(--red);border:1.5px solid #f0c0bc">Löschen</button>
     </div>
   </div>
 </div>
@@ -477,6 +498,22 @@ document.querySelectorAll(".tab").forEach(tab=>{
 });
 
 // ── Anwesenheit ──
+function schnellNeuPerson() {
+  // Zum Personen-Tab und Add-Card öffnen
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelector('[data-tab="personen"]').classList.add("active");
+  document.getElementById("tab-personen").classList.add("active");
+  if(!document.getElementById("add-card").classList.contains("open")) toggleAddCard();
+}
+
+function stepperChange(id, delta) {
+  const inp = document.getElementById(id);
+  const val = parseInt(inp.value)||0;
+  inp.value = Math.max(0, val + delta);
+  planAutosave();
+}
+
 function heuteDatum() {
   const h=heute();
   document.getElementById("datum-input").value=h;
@@ -499,7 +536,8 @@ async function datumWechseln() {
     const res=await api("getTeilnahme",{datum});
     if(res.ok) {
       anwesendHeute=new Set(res.anwesend);
-      document.getElementById("komparsen-input").value = res.komparsen||"";
+      document.getElementById("komparsen-input").value = res.komparsen||0;
+      document.getElementById("gaeste-input").value = res.gaeste||0;
     }
     setAutosaveStatus("idle");
   } catch(e) { setAutosaveStatus("err"); }
@@ -543,16 +581,18 @@ function renderListe() {
       const divId = sortierung==="abteilung" ? "" : `id="alpha-${b}"`;
       div=`<div class="alpha-divider" ${divId}>${b}</div>`;
     }
+    const canEdit = !anwesendHeute.has(p.id) && p.id.startsWith("P");
     return div+`<div class="person-row${an?" checked":""}" data-id="${p.id}"
       data-n="${p.nachname.toLowerCase()}"
       data-v="${(p.vorname||"").toLowerCase()}"
-      data-p="${(p.position||"").toLowerCase()}"
-      onclick="toggle('${p.id}')">
-      <div class="checkbox">${an?"✓":""}</div>
-      <div class="person-info">
+      data-p="${(p.position||"").toLowerCase()}">
+      <div class="person-tap" onclick="toggle('${p.id}')"></div>
+      <div class="checkbox" onclick="toggle('${p.id}')" style="cursor:pointer">${an?"✓":""}</div>
+      <div class="person-info" style="flex:1;min-width:0">
         <div class="person-name"><span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span></div>
         ${p.position?`<div class="person-pos">${p.position}</div>`:""}
       </div>
+      ${canEdit?`<button class="row-edit-btn" onclick="editOeffnen('${p.id}')" title="Bearbeiten">✏</button>`:""}
     </div>`;
   }).join("");
   container.innerHTML=html||'<div style="color:var(--muted);padding:16px 4px;font-size:15px">Keine Einträge.</div>';
@@ -620,11 +660,12 @@ async function autosave() {
   if(!datum)return;
   setAutosaveStatus("saving");
   const komparsen = parseInt(document.getElementById("komparsen-input").value)||0;
+  const gaeste = parseInt(document.getElementById("gaeste-input").value)||0;
   const eintraege=allePersonen
     .filter(p=>anwesendHeute.has(p.id))
     .map(p=>({id:p.id,name:p.vorname?`${p.nachname}, ${p.vorname}`:p.nachname,abteilung:p.position||""}));
   try {
-    const res=await api("setTeilnahme",{datum,eintraege,komparsen});
+    const res=await api("setTeilnahme",{datum,eintraege,komparsen,gaeste});
     if(res.ok) setAutosaveStatus("saved"); else setAutosaveStatus("err");
   } catch(e) { setAutosaveStatus("err"); }
 }
@@ -678,9 +719,7 @@ function editSchliessen() {
   document.getElementById("edit-modal").style.display = "none";
   document.getElementById("modal-status").style.display = "none";
   const saveBtn = document.getElementById("edit-save-btn");
-  const delBtn  = document.getElementById("edit-del-btn");
   if (saveBtn) { saveBtn.classList.remove("btn-working"); }
-  if (delBtn)  { delBtn.classList.remove("btn-working"); delBtn.dataset.confirm="0"; delBtn.textContent="Löschen"; }
   editId = null;
 }
 
