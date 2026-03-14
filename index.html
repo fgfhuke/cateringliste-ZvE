@@ -164,7 +164,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.3</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.5</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -179,7 +179,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.3</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.5</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -884,8 +884,14 @@ async function exportLaden() {
     if(!res.ok){c.innerHTML=`<div style="color:var(--red)">${res.error}</div>`;return;}
     exportDaten=res.eintraege;
     if(exportDaten.length===0){c.innerHTML='<div style="color:var(--muted);font-size:15px">Keine Einträge für diesen Monat.</div>';return;}
-    const alleTage=[...new Set(exportDaten.flatMap(e=>e.tage))].sort();
     const wochentage=["So","Mo","Di","Mi","Do","Fr","Sa"];
+    // Alle Tage des Monats generieren (nicht nur Tage mit Einträgen)
+    const [jahr,mon] = monat.split("-").map(Number);
+    const tageImMonat = new Date(jahr, mon, 0).getDate();
+    const alleTage = Array.from({length:tageImMonat}, (_,i) => {
+      const t = String(i+1).padStart(2,"0");
+      return `${monat}-${t}`;
+    });
 
     // Header: Wochentag oben, Tag unten — zweizeilig
     const tageHeader=alleTage.map(t=>{
@@ -961,7 +967,13 @@ function pdfExport() {
   const wochentage = ["So","Mo","Di","Mi","Do","Fr","Sa"];
   const abtReihenfolge = ["PRODUZENTEN","REGIE","PRODUKTION","KAMERA","KAMERABÜHNE","KOSTÜM","LICHT","MASKENBILD","SZENENBILD","TON","TURBINE STUDIOS HAUPTHAUS","CAST","GÄSTE","Komparsen","Ohne Abteilung"];
 
-  const alleTage = [...new Set(exportDaten.flatMap(e=>e.tage))].sort();
+  // Alle Tage des Monats
+  const [pJahr,pMon] = monat.split("-").map(Number);
+  const pTageImMonat = new Date(pJahr, pMon, 0).getDate();
+  const alleTage = Array.from({length:pTageImMonat}, (_,i) => {
+    const t = String(i+1).padStart(2,"0");
+    return `${monat}-${t}`;
+  });
 
   // Nach Abteilung gruppieren
   const gruppen = {};
@@ -995,7 +1007,7 @@ function pdfExport() {
       body.push([
         e.name,
         e.anzahl,
-        ...alleTage.map(t => e.tage.includes(t) ? "✓" : "")
+        ...alleTage.map(t => e.tage.includes(t) ? "●" : "")
       ]);
     });
   });
@@ -1027,10 +1039,12 @@ function pdfExport() {
     },
     headStyles: { fillColor:[238,237,232], textColor:[60,60,60], fontSize:6.5 },
     didParseCell: (data) => {
-      // Haken grün färben
-      if(data.cell.raw === "✓") {
+      // Punkt grün, 10pt
+      if(data.cell.raw === "●") {
         data.cell.styles.textColor = [26,107,60];
-        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.fontSize = 10;
+        data.cell.styles.fontStyle = "normal";
+        data.cell.styles.valign = "middle";
       }
       // ∑-Spalte
       if(data.column.index===1 && data.section==="body" && typeof data.cell.raw === "number") {
