@@ -183,7 +183,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.4</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.5</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -198,7 +198,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.4</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.5</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -279,9 +279,9 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
       <div class="section-label">Liste einfügen</div>
       <div style="font-size:14px;color:var(--muted);margin-bottom:12px;line-height:1.6">
         Ein Eintrag pro Zeile: <code style="font-family:var(--mono);color:var(--text)">Nachname, Vorname</code>
-        oder <code style="font-family:var(--mono);color:var(--text)">Nachname, Vorname;Position</code>
+        oder <code style="font-family:var(--mono);color:var(--text)">Nachname, Vorname;Abteilung</code>
       </div>
-      <textarea id="import-text" placeholder="Mustermann, Max&#10;Schmidt, Anna;Regie&#10;Müller, Peter	Ton" oninput="importVorschau()"></textarea>
+      <textarea id="import-text" placeholder="Mustermann, Max&#10;Schmidt, Anna;01 Regie&#10;Müller, Peter;03 Kamera / Ton" oninput="importVorschau()"></textarea>
       <div class="import-preview" id="import-preview">
         <div class="import-summary" id="import-summary"></div>
         <div id="import-preview-list"></div>
@@ -1016,7 +1016,9 @@ async function exportLaden() {
       const d=new Date(t+"T12:00:00");
       const tag=t.split("-")[2];
       const wt=wochentage[d.getDay()];
-      return `<th style="padding:2px 3px;line-height:1.2"><span style="display:block;font-size:8px;color:var(--muted);font-weight:400">${wt}</span><span style="display:block;font-size:11px;font-weight:700">${tag}</span></th>`;
+      const isWE=(d.getDay()===0||d.getDay()===6);
+      const bg=isWE?' style="background:#fff3e0"':'';
+      return `<th${bg} style="padding:2px 3px;line-height:1.2${isWE?";background:#fff3e0":""}"><span style="display:block;font-size:8px;color:${isWE?"#d4740a":"var(--muted)"};font-weight:400">${wt}</span><span style="display:block;font-size:11px;font-weight:700;color:${isWE?"#d4740a":"inherit"}">${tag}</span></th>`;
     }).join("");
     const header=`<tr><th class="col-name">Name</th><th class="col-sum">∑</th>${tageHeader}</tr>`;
 
@@ -1112,6 +1114,11 @@ function pdfExport() {
     const d = new Date(t+"T12:00:00");
     return wochentage[d.getDay()]+"\n"+t.split("-")[2];
   })];
+  // Wochenend-Spalten-Indizes merken für Header-Styling
+  const weIndizes = new Set(alleTage.map((t,i)=>{
+    const d=new Date(t+"T12:00:00");
+    return (d.getDay()===0||d.getDay()===6)?i+2:-1;
+  }).filter(i=>i>=0));
 
   // Zeilen aufbauen
   const body = [];
@@ -1162,6 +1169,11 @@ function pdfExport() {
         data.cell.text = [""];
         data.cell.styles.fillColor = [255,255,255];
       }
+      // Wochenend-Spalten Header orange
+      if(data.section==="head" && data.column.index>=2 && weIndizes.has(data.column.index)) {
+        data.cell.styles.fillColor = [255,243,224];
+        data.cell.styles.textColor = [212,116,10];
+      }
       // ∑-Spalte
       if(data.column.index===1 && data.section==="body" && typeof data.cell.raw === "number") {
         data.cell.styles.textColor = [26,107,60];
@@ -1171,6 +1183,18 @@ function pdfExport() {
     },
     alternateRowStyles: { fillColor:[250,250,248] },
     didDrawCell: (data) => {
+      // Wochenende-Spalten orange unterlegen
+      if(data.column.index >= 2 && data.section !== "head") {
+        const tIdx = data.column.index - 2;
+        if(tIdx < alleTage.length) {
+          const d = new Date(alleTage[tIdx]+"T12:00:00");
+          if(d.getDay()===0||d.getDay()===6) {
+            doc.setFillColor(255,243,224);
+            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, "F");
+          }
+        }
+      }
+      // Grüner Punkt für Anwesenheit (nach Hintergrund zeichnen)
       if(data.cell.raw === 1 && data.section === "body" && data.column.index >= 2) {
         const x = data.cell.x + data.cell.width/2;
         const y = data.cell.y + data.cell.height/2;
