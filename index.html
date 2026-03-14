@@ -164,7 +164,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.5</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.6</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -179,7 +179,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.5</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.6</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -1007,7 +1007,7 @@ function pdfExport() {
       body.push([
         e.name,
         e.anzahl,
-        ...alleTage.map(t => e.tage.includes(t) ? "●" : "")
+        ...alleTage.map(t => e.tage.includes(t) ? 1 : "")
       ]);
     });
   });
@@ -1039,12 +1039,9 @@ function pdfExport() {
     },
     headStyles: { fillColor:[238,237,232], textColor:[60,60,60], fontSize:6.5 },
     didParseCell: (data) => {
-      // Punkt grün, 10pt
-      if(data.cell.raw === "●") {
-        data.cell.styles.textColor = [26,107,60];
-        data.cell.styles.fontSize = 10;
-        data.cell.styles.fontStyle = "normal";
-        data.cell.styles.valign = "middle";
+      // Zelle mit 1 = Anwesenheit — Text leer lassen, Punkt via didDrawCell
+      if(data.cell.raw === 1) {
+        data.cell.text = [""];
       }
       // ∑-Spalte
       if(data.column.index===1 && data.section==="body" && typeof data.cell.raw === "number") {
@@ -1054,6 +1051,15 @@ function pdfExport() {
       }
     },
     alternateRowStyles: { fillColor:[250,250,248] },
+    didDrawCell: (data) => {
+      if(data.cell.raw === 1 && data.section === "body") {
+        const x = data.cell.x + data.cell.width/2;
+        const y = data.cell.y + data.cell.height/2;
+        const r = 1.8;
+        doc.setFillColor(26,107,60);
+        doc.circle(x, y, r, "F");
+      }
+    },
   });
 
   doc.save(`catering_${monat}${projekt.replace(" · ","_")}.pdf`);
