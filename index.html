@@ -183,7 +183,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.3</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.4</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -198,7 +198,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.3</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.4</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -722,14 +722,35 @@ function renderPersonenverwaltung() {
   document.getElementById("count-personen").textContent=allePersonen.length;
   const c=document.getElementById("personen-verwaltung");
   if(allePersonen.length===0){c.innerHTML='<div style="color:var(--muted);font-size:15px;padding:12px 0">Noch keine Personen angelegt.</div>';return;}
-  c.innerHTML=allePersonen.map(p=>`
-    <div class="person-row" style="cursor:default">
-      <div class="person-info">
-        <div class="person-name"><span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span></div>
-        <div class="person-pos">${[p.rolle,p.position].filter(Boolean).join(" · ")}</div>
+  let letzteGruppe="";
+  c.innerHTML=allePersonen.map(p=>{
+    // Namensdarstellung je nach Sortierung
+    let nameHTML;
+    if(sortierung==="vorname") {
+      nameHTML=`<span style="font-weight:600;color:var(--text)">${p.vorname||p.nachname}</span>${p.vorname?` <span style="font-weight:400;color:var(--muted)">${p.nachname}</span>`:""}`;
+    } else {
+      nameHTML=`<span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span>`;
+    }
+    // Abteilung nur zeigen wenn nicht nach Abteilung sortiert
+    const zeigPos = p.position && sortierung!=="abteilung" && sortierung!=="kompakt";
+    // Gruppenüberschriften bei Abteilung/Kompakt
+    let div="";
+    if(sortierung==="abteilung"||sortierung==="kompakt") {
+      const g=p.position||"Ohne Abteilung";
+      if(g!==letzteGruppe){letzteGruppe=g;div=`<div class="alpha-divider abt-group${sortierung==="kompakt"?" kompakt":""}">${g}</div>`;}
+    } else if(sortierung==="nachname") {
+      const b=p.nachname[0]?.toUpperCase()||"#";
+      if(b!==letzteGruppe){letzteGruppe=b;div=`<div class="alpha-divider">${b}</div>`;}
+    }
+    const istKompakt=sortierung==="kompakt";
+    return div+`<div class="person-row${istKompakt?" kompakt":""}" style="cursor:default">
+      <div class="person-info" style="flex:1;min-width:0">
+        <div class="person-name">${nameHTML}</div>
+        ${zeigPos?`<div class="person-pos">${p.position}</div>`:""}
       </div>
-      <button class="btn-icon" onclick="editOeffnen('${p.id}')" title="Bearbeiten" style="font-size:16px;color:var(--muted)">✏️</button>
-    </div>`).join("");
+      <button class="btn-icon" onclick="editOeffnen('${p.id}')" title="Bearbeiten" style="font-size:20px;color:var(--muted)">✏️</button>
+    </div>`;
+  }).join("");
 }
 
 let editId = null;
