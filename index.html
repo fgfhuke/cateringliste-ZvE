@@ -119,21 +119,34 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .preview-dot.dup{background:var(--border2)}
 .import-summary{font-size:13px;color:var(--muted);margin:8px 0 12px;font-family:var(--mono)}
 
-.monat-bar{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;box-shadow:var(--shadow)}
-.export-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);background:var(--surface)}
-.export-table{border-collapse:collapse;font-size:14px;min-width:100%}
-.export-table th{text-align:left;font-weight:600;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:9px 10px;border-bottom:2px solid var(--border);background:var(--surface);white-space:nowrap;position:sticky;top:0}
-.export-table td{padding:8px 10px;border-bottom:1px solid var(--border2);background:var(--surface);white-space:nowrap}
-.export-table tr:last-child td{border-bottom:none}
-/* Name-Spalte links fixieren */
-.export-table .col-name{position:sticky;left:0;background:var(--surface);z-index:2;min-width:160px;max-width:200px;overflow:hidden;text-overflow:ellipsis}
-.export-table th.col-name{z-index:3;background:var(--surface2)}
+.monat-bar{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;box-shadow:var(--shadow)}
+.export-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--r);background:var(--surface)}
+.export-table{border-collapse:collapse;font-size:11px;min-width:100%}
+/* Header: Name fixiert links, Wochentag oben, Tag darunter */
+.export-table th{font-weight:600;font-size:10px;color:var(--muted);padding:3px 4px;border-bottom:1.5px solid var(--border);background:var(--surface2);white-space:nowrap;text-align:center;position:sticky;top:0;z-index:1}
+.export-table th.col-name{text-align:left;position:sticky;left:0;z-index:3;background:var(--surface2);min-width:120px;max-width:160px;padding:3px 6px}
+.export-table th.col-sum{background:var(--accent-bg)}
+.export-table td{padding:2px 4px;border-bottom:1px solid var(--border);background:var(--surface);white-space:nowrap;text-align:center;font-size:10px;line-height:1.4}
+.export-table td.col-name{text-align:left;position:sticky;left:0;background:var(--surface);z-index:2;min-width:120px;max-width:160px;padding:2px 6px;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+.export-table td.col-sum{font-family:var(--mono);font-weight:700;color:var(--accent);background:var(--accent-bg);font-size:11px}
 /* Abteilungs-Gruppenzeile */
-.export-table .row-group td{background:var(--surface2);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--border)}
-.export-table .row-group .col-name{background:var(--surface2)}
-.export-table .row-summe td{background:var(--accent-bg);font-weight:600;border-top:2px solid var(--green-brd)}
-.export-table .row-summe .col-name{background:var(--accent-bg)}
-.anzahl-badge{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent)}
+.export-table .row-group td{background:#e8e6de;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#555;padding:3px 6px;border-bottom:1px solid var(--border2);border-top:1.5px solid var(--border2)}
+.export-table .row-group td.col-name{background:#e8e6de;position:sticky;left:0;z-index:2}
+.anzahl-badge{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent)}
+/* PDF-Druck */
+@media print {
+  body{background:#fff}
+  .topbar,.tabs,.monat-bar,#csv-btn,#pdf-btn,.autosave-bar{display:none!important}
+  .panel{display:block!important;overflow:visible!important;height:auto!important}
+  #tab-export{padding:0!important}
+  .export-wrap{overflow:visible!important;border:none!important;box-shadow:none!important}
+  .export-table th,.export-table td{position:static!important}
+  .export-table{font-size:8px;width:100%}
+  .export-table th{font-size:8px;padding:2px 3px}
+  .export-table td{padding:1px 3px}
+  .export-table td.col-name,.export-table th.col-name{min-width:80px;max-width:100px}
+  @page{size:A4 landscape;margin:8mm}
+}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--surface);border-radius:24px;padding:12px 24px;font-size:15px;font-weight:500;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.18)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -162,7 +175,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.1</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.2</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -177,7 +190,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.1</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.2</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -301,12 +314,13 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
   <!-- EXPORT -->
   <div class="panel" id="tab-export">
-    <div style="padding:16px;max-width:none">
+    <div style="padding:12px 16px;max-width:none">
       <div class="monat-bar">
         <label>Monat</label>
-        <input type="month" id="monat-input" style="width:160px;flex:none;padding:8px 12px;font-size:16px">
+        <input type="month" id="monat-input" style="width:150px;flex:none;padding:7px 10px;font-size:15px">
         <button class="btn btn-ghost btn-sm" onclick="exportLaden()">Laden</button>
         <button class="btn btn-ghost btn-sm" onclick="csvExport()" id="csv-btn" style="display:none">CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="pdfExport()" id="pdf-btn" style="display:none">PDF</button>
       </div>
       <div id="export-result"></div>
     </div>
@@ -468,6 +482,7 @@ document.querySelectorAll(".tab").forEach(tab=>{
     if(tab.dataset.tab==="export"){
       document.getElementById("export-result").innerHTML="";
       document.getElementById("csv-btn").style.display="none";
+      document.getElementById("pdf-btn").style.display="none";
     }
   });
 });
@@ -881,20 +896,27 @@ async function exportLaden() {
     exportDaten=res.eintraege;
     if(exportDaten.length===0){c.innerHTML='<div style="color:var(--muted);font-size:15px">Keine Einträge für diesen Monat.</div>';return;}
     const alleTage=[...new Set(exportDaten.flatMap(e=>e.tage))].sort();
-    const tageHeader=alleTage.map(t=>`<th style="font-family:var(--mono);font-size:11px;text-align:center">${formatDatum(t).slice(0,5)}</th>`).join("");
-    const header=`<tr><th class="col-name">Name</th>${tageHeader}<th>∑</th></tr>`;
+    const wochentage=["So","Mo","Di","Mi","Do","Fr","Sa"];
 
-    // Nach Abteilung gruppieren (Sortierung aus sortierung-Variable)
+    // Header: Wochentag oben, Tag unten — zweizeilig
+    const tageHeader=alleTage.map(t=>{
+      const d=new Date(t+"T12:00:00");
+      const tag=t.split("-")[2];
+      const wt=wochentage[d.getDay()];
+      return `<th style="padding:2px 3px;line-height:1.2"><span style="display:block;font-size:8px;color:var(--muted);font-weight:400">${wt}</span><span style="display:block;font-size:11px;font-weight:700">${tag}</span></th>`;
+    }).join("");
+    const header=`<tr><th class="col-name">Name</th><th class="col-sum">∑</th>${tageHeader}</tr>`;
+
+    // Nach Abteilung gruppieren
+    const abtReihenfolge=["PRODUZENTEN","REGIE","PRODUKTION","KAMERA","KAMERABÜHNE","KOSTÜM","LICHT","MASKENBILD","SZENENBILD","TON","TURBINE STUDIOS HAUPTHAUS","CAST","GÄSTE","Komparsen","Ohne Abteilung"];
     const gruppen={};
     exportDaten.forEach(e=>{
       const abt=e.abteilung||"Ohne Abteilung";
       if(!gruppen[abt]) gruppen[abt]=[];
       gruppen[abt].push(e);
     });
-    // Abteilungs-Reihenfolge: nach ABTEILUNGEN-Liste sortieren
-    const abtReihenfolge=["PRODUZENTEN","REGIE","PRODUKTION","KAMERA","KAMERABÜHNE","KOSTÜM","LICHT","MASKENBILD","SZENENBILD","TON","TURBINE STUDIOS HAUPTHAUS","CAST","GÄSTE","Komparsen","Ohne Abteilung"];
     const sortierteGruppen=Object.keys(gruppen).sort((a,b)=>{
-      const ia=abtReihenfolge.indexOf(a); const ib=abtReihenfolge.indexOf(b);
+      const ia=abtReihenfolge.indexOf(a),ib=abtReihenfolge.indexOf(b);
       if(ia===-1&&ib===-1) return a.localeCompare(b,"de");
       if(ia===-1) return 1; if(ib===-1) return -1;
       return ia-ib;
@@ -903,28 +925,19 @@ async function exportLaden() {
     let rows="";
     sortierteGruppen.forEach(abt=>{
       const personen=gruppen[abt];
-      // Gruppenüberschrift
       rows+=`<tr class="row-group"><td class="col-name" colspan="${alleTage.length+2}">${abt}</td></tr>`;
-      // Personen der Gruppe
       personen.sort((a,b)=>a.name.localeCompare(b.name,"de")).forEach(e=>{
         rows+=`<tr>
-          <td class="col-name" style="font-weight:600">${e.name}</td>
-          ${alleTage.map(t=>`<td style="text-align:center">${e.tage.includes(t)?'<span style="color:var(--green);font-weight:700">✓</span>':'<span style="color:var(--border2)">·</span>'}</td>`).join("")}
-          <td><span class="anzahl-badge">${e.anzahl}</span></td>
+          <td class="col-name">${e.name}</td>
+          <td class="col-sum">${e.anzahl}</td>
+          ${alleTage.map(t=>`<td>${e.tage.includes(t)?'<span style="color:var(--green);font-weight:900;font-size:12px">✓</span>':'<span style="color:var(--border)">·</span>'}</td>`).join("")}
         </tr>`;
       });
-      // Summenzeile pro Abteilung
-      const summe=alleTage.map(t=>personen.filter(e=>e.tage.includes(t)).length);
-      const total=personen.reduce((s,e)=>s+e.anzahl,0);
-      rows+=`<tr class="row-summe">
-        <td class="col-name" style="font-size:12px">∑ ${abt}</td>
-        ${summe.map(s=>`<td style="text-align:center;font-family:var(--mono);font-size:12px;color:var(--accent)">${s||""}</td>`).join("")}
-        <td><span class="anzahl-badge">${total}</span></td>
-      </tr>`;
     });
 
     c.innerHTML=`<div class="export-wrap"><table class="export-table">${header}${rows}</table></div>`;
     document.getElementById("csv-btn").style.display="block";
+    document.getElementById("pdf-btn").style.display="block";
   }catch(e){c.innerHTML='<div style="color:var(--red)">Verbindungsfehler</div>';}
 }
 
@@ -946,6 +959,19 @@ function csvExport() {
   a.href=url; a.download=`catering_${document.getElementById("monat-input").value}.csv`;
   a.click(); URL.revokeObjectURL(url);
   toast("CSV exportiert");
+}
+
+function pdfExport() {
+  const monat = document.getElementById("monat-input").value;
+  const titel = `Catering ${PROJEKT_KUERZEL} ${monat}`;
+  // Drucken mit Titel
+  const orig = document.title;
+  document.title = titel;
+  // Alle anderen Panels ausblenden für Druck
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("tab-export").classList.add("active");
+  window.print();
+  document.title = orig;
 }
 </script>
 </body>
