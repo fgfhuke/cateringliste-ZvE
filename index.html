@@ -171,19 +171,19 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .row-edit-btn{background:none;border:none;color:var(--border2);font-size:20px;cursor:pointer;padding:2px 6px;flex-shrink:0;line-height:1;vertical-align:middle}
 .row-edit-btn:hover{color:var(--muted)}
 /* Kompakt-Modus */
-.person-row.kompakt{padding:3px 8px;gap:6px;border-radius:3px;box-shadow:none;border:none;border-bottom:1px solid var(--border)}
-.person-row.kompakt .checkbox{width:14px;height:14px;border-radius:2px;font-size:9px;border-width:1.5px}
-.person-row.kompakt .person-name{font-size:12px;line-height:1.2}
+.person-row.kompakt{padding:4px 8px;gap:7px;border-radius:3px;box-shadow:none;border:none;border-bottom:1px solid var(--border)}
+.person-row.kompakt .checkbox{width:15px;height:15px;border-radius:2px;font-size:10px;border-width:1.5px}
+.person-row.kompakt .person-name{font-size:13px;line-height:1.25}
 .person-row.kompakt .person-pos{display:none}
-.person-row.kompakt .row-edit-btn{font-size:11px;padding:0 3px}
-.alpha-divider.abt-group.kompakt{font-size:10px;font-weight:700;padding:5px 4px 2px;letter-spacing:.08em;border-bottom:1.5px solid var(--border2);margin-bottom:1px}
+.person-row.kompakt .row-edit-btn{font-size:12px;padding:0 3px}
+.alpha-divider.abt-group.kompakt{font-size:13px;font-weight:700;color:#d4740a;padding:6px 4px 3px;letter-spacing:.02em;border-bottom:1.5px solid var(--border2);margin-bottom:1px}
 </style>
 </head>
 <body>
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.2</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.3</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -198,7 +198,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.2</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.3</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -302,7 +302,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
         <div class="field" style="margin-bottom:10px"><label style="font-size:11px;margin-bottom:4px">Nachname / Firma</label><input type="text" id="new-nachname" placeholder="Name / Firma" style="padding:8px 10px;font-size:15px"></div>
         <div class="field" style="margin-bottom:10px"><label style="font-size:11px;margin-bottom:4px">Vorname</label><input type="text" id="new-vorname" placeholder="Max" style="padding:8px 10px;font-size:15px"></div>
       </div>
-      <div class="field" style="margin-bottom:10px"><label style="font-size:11px;margin-bottom:4px">Position / Rolle</label><input type="text" id="new-position" placeholder="z.B. 1. Kameraassistenz" style="padding:8px 10px;font-size:15px"></div>
+
       <div class="field" style="margin-bottom:10px"><label style="font-size:11px;margin-bottom:4px">Abteilung</label>
         <select id="new-abt" style="padding:8px 10px;font-size:15px">
           <option value="">– Abteilung –</option>
@@ -587,7 +587,7 @@ function renderListe() {
   const html=allePersonen.map(p=>{
     const an=anwesendHeute.has(p.id);
     let div="";
-    const b = sortierung==="abteilung"
+    const b = (sortierung==="abteilung"||sortierung==="kompakt")
       ? (p.position||"Ohne Abteilung")
       : (p.nachname[0]?.toUpperCase()||"#");
     if(b!==letzterGruppe){
@@ -857,16 +857,15 @@ function addAbbrechen() {
 }
 
 document.getElementById("new-nachname").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("new-vorname").focus();});
-document.getElementById("new-vorname").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("new-position").focus();});
-document.getElementById("new-position").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("new-abt").focus();});
+document.getElementById("new-vorname").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("new-abt").focus();});
 document.getElementById("new-abt").addEventListener("keydown",e=>{if(e.key==="Enter")personAnlegen();});
 
 async function personAnlegen() {
   const nachname=document.getElementById("new-nachname").value.trim();
   const vorname=document.getElementById("new-vorname").value.trim();
-  const posRolle=document.getElementById("new-position").value.trim();
+  const posRolle="";
   const abteilung=document.getElementById("new-abt").value;
-  const position=abteilung; // Abteilung ist die Hauptkategorie
+  const position=abteilung;
   if(!nachname){document.getElementById("add-error").textContent="Nachname / Firma erforderlich";return;}
   const name=vorname?`${nachname}, ${vorname}`:nachname;
   const saveBtn=document.getElementById("add-save-btn");
@@ -879,7 +878,6 @@ async function personAnlegen() {
       allePersonen=sortNachname([...allePersonen,{id:res.id,nachname,vorname,position,rolle:posRolle}]);
       document.getElementById("new-nachname").value="";
       document.getElementById("new-vorname").value="";
-      document.getElementById("new-position").value="";
       document.getElementById("new-abt").selectedIndex=0;
       document.getElementById("add-error").textContent="";
       renderPersonenverwaltung(); renderListe();
