@@ -77,6 +77,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .search-clear:hover{background:var(--border2);color:var(--text)}
 
 .alpha-divider{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--border2);letter-spacing:.12em;padding:8px 4px 2px;user-select:none}
+.alpha-divider.abt-group{font-family:var(--sans);font-size:16px;font-weight:600;color:#d4740a;letter-spacing:0;padding:12px 4px 4px}
 
 .list-wrap{display:flex;gap:0;position:relative}
 .personen-list{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
@@ -174,7 +175,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.8</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.9</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -189,12 +190,11 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.8</div>
-    <button class="btn-icon" onclick="schnellNeuPerson()" title="Person anlegen" style="font-size:24px;font-weight:300;color:var(--accent)">+</button>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.9</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
-    <div class="tab active" data-tab="anwesenheit">Anwesenheit</div>
+    <div class="tab active" data-tab="anwesenheit">Teilnahme</div>
     <div class="tab mobile-hide" data-tab="personen">Personen</div>
     <div class="tab mobile-hide" data-tab="export">Übersicht</div>
     <div style="flex:1"></div>
@@ -206,6 +206,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
         <option value="abteilung">Abteilung</option>
       </select>
     </div>
+    <button onclick="schnellNeuPerson()" title="Neue Person" style="width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 8px;flex-shrink:0;box-shadow:0 2px 6px rgba(26,107,60,.3);-webkit-tap-highlight-color:transparent">+</button>
   </div>
 
   <!-- ANWESENHEIT -->
@@ -287,14 +288,14 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     </button>
 
     <div class="card" id="add-card">
-      <div class="section-label">Neue Person</div>
+      <div class="section-label" style="padding-top:4px;padding-bottom:6px">Neue Person</div>
       <div class="card-row">
-        <div class="field"><label>Nachname / Firma</label><input type="text" id="new-nachname" placeholder="Name / Firma"></div>
-        <div class="field"><label>Vorname</label><input type="text" id="new-vorname" placeholder="Max"></div>
+        <div class="field" style="margin-bottom:10px"><label style="font-size:11px;margin-bottom:4px">Nachname / Firma</label><input type="text" id="new-nachname" placeholder="Name / Firma" style="padding:8px 10px;font-size:15px"></div>
+        <div class="field" style="margin-bottom:10px"><label style="font-size:11px;margin-bottom:4px">Vorname</label><input type="text" id="new-vorname" placeholder="Max" style="padding:8px 10px;font-size:15px"></div>
       </div>
-      <div class="field"><label>Position / Rolle</label><input type="text" id="new-position" placeholder="z.B. 1. Kameraassistenz"></div>
-      <div class="field"><label>Abteilung</label>
-        <select id="new-abt">
+      <div class="field" style="margin-bottom:10px"><label style="font-size:11px;margin-bottom:4px">Position / Rolle</label><input type="text" id="new-position" placeholder="z.B. 1. Kameraassistenz" style="padding:8px 10px;font-size:15px"></div>
+      <div class="field" style="margin-bottom:10px"><label style="font-size:11px;margin-bottom:4px">Abteilung</label>
+        <select id="new-abt" style="padding:8px 10px;font-size:15px">
           <option value="">– Abteilung –</option>
           <option value="01 Regie">01 Regie</option>
           <option value="02 Produktion">02 Produktion</option>
@@ -566,8 +567,7 @@ document.getElementById("suche").addEventListener("focus", () => {
 
 function renderListe() {
   const container = document.getElementById("personen-list");
-  // DOM komplett aufbauen (nur bei Datumswechsel / Login)
-  let letzterBuchstabe="";
+  let letzterGruppe="";
   const buchstaben=new Set();
   const html=allePersonen.map(p=>{
     const an=anwesendHeute.has(p.id);
@@ -575,13 +575,24 @@ function renderListe() {
     const b = sortierung==="abteilung"
       ? (p.position||"Ohne Abteilung")
       : (p.nachname[0]?.toUpperCase()||"#");
-    if(b!==letzterBuchstabe){
-      letzterBuchstabe=b;
-      if(sortierung!=="abteilung") buchstaben.add(b);
-      const divId = sortierung==="abteilung" ? "" : `id="alpha-${b}"`;
-      div=`<div class="alpha-divider" ${divId}>${b}</div>`;
+    if(b!==letzterGruppe){
+      letzterGruppe=b;
+      if(sortierung==="abteilung") {
+        div=`<div class="alpha-divider abt-group">${b}</div>`;
+      } else {
+        buchstaben.add(b);
+        div=`<div class="alpha-divider" id="alpha-${b}">${b}</div>`;
+      }
     }
     const canEdit = !anwesendHeute.has(p.id) && p.id.startsWith("P");
+    // Namensdarstellung je nach Sortierung
+    let nameHTML;
+    if(sortierung==="vorname") {
+      // Vorname fett, Nachname grau, kein Komma
+      nameHTML=`<span class="nachname" style="font-weight:400;color:var(--muted)">${p.vorname||""}</span>${p.vorname?" ":""}<span class="vorname" style="font-weight:600;color:var(--text)">${p.nachname}</span>`;
+    } else {
+      nameHTML=`<span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span>`;
+    }
     return div+`<div class="person-row${an?" checked":""}" data-id="${p.id}"
       data-n="${p.nachname.toLowerCase()}"
       data-v="${(p.vorname||"").toLowerCase()}"
@@ -589,10 +600,9 @@ function renderListe() {
       <div class="person-tap" onclick="toggle('${p.id}')"></div>
       <div class="checkbox" onclick="toggle('${p.id}')" style="cursor:pointer">${an?"✓":""}</div>
       <div class="person-info" style="flex:1;min-width:0">
-        <div class="person-name"><span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span></div>
+        <div class="person-name">${nameHTML}${canEdit?`<button class="row-edit-btn" onclick="editOeffnen('${p.id}')" title="Bearbeiten">✏</button>`:""}</div>
         ${p.position?`<div class="person-pos">${p.position}</div>`:""}
       </div>
-      ${canEdit?`<button class="row-edit-btn" onclick="editOeffnen('${p.id}')" title="Bearbeiten">✏</button>`:""}
     </div>`;
   }).join("");
   container.innerHTML=html||'<div style="color:var(--muted);padding:16px 4px;font-size:15px">Keine Einträge.</div>';
@@ -836,6 +846,18 @@ async function personAnlegen() {
       document.getElementById("new-abt").selectedIndex=0;
       document.getElementById("add-error").textContent="";
       renderPersonenverwaltung(); renderListe();
+      // Zurück zu Teilnahme, neu angelegte Person anzeigen
+      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+      document.querySelector('[data-tab="anwesenheit"]').classList.add("active");
+      document.getElementById("tab-anwesenheit").classList.add("active");
+      document.getElementById("add-card").classList.remove("open");
+      document.getElementById("add-toggle-btn").innerHTML='<span class="icon">+</span> Neue Person anlegen';
+      // Neue Person in der Liste finden und scrollen
+      setTimeout(()=>{
+        const row = document.querySelector(`[data-id="${res.id}"]`);
+        if(row) row.scrollIntoView({behavior:"smooth", block:"center"});
+      }, 300);
       toast(`${name} angelegt`);
     } else { document.getElementById("add-error").textContent=res.error; }
   } catch(e) { document.getElementById("add-error").textContent="Verbindungsfehler"; }
