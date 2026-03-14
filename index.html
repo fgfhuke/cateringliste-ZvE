@@ -183,7 +183,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.6</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.7</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -198,7 +198,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.6</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.7</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -342,8 +342,10 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="panel" id="tab-export">
     <div style="padding:12px 16px;max-width:none">
       <div class="monat-bar">
-        <label>Monat</label>
-        <input type="month" id="monat-input" style="width:150px;flex:none;padding:7px 10px;font-size:15px">
+        <label style="margin:0;display:flex;align-items:center">Monat</label>
+        <select id="monat-input" style="width:180px;flex:none;padding:7px 10px;font-size:15px">
+          <option value="">– Monat wählen –</option>
+        </select>
         <button class="btn btn-ghost btn-sm" onclick="exportLaden()">Laden</button>
         <button class="btn btn-ghost btn-sm" onclick="csvExport()" id="csv-btn" style="display:none">CSV</button>
         <button class="btn btn-ghost btn-sm" onclick="pdfExport()" id="pdf-btn" style="display:none">PDF</button>
@@ -509,6 +511,7 @@ document.querySelectorAll(".tab").forEach(tab=>{
       document.getElementById("export-result").innerHTML="";
       document.getElementById("csv-btn").style.display="none";
       document.getElementById("pdf-btn").style.display="none";
+      ladeVerfuegbareMonate();
     }
   });
 });
@@ -991,9 +994,31 @@ async function importDurchfuehren() {
 }
 
 // ── Export ──
+async function ladeVerfuegbareMonate() {
+  try {
+    const res = await api("getMonate");
+    if(!res.ok) return;
+    const sel = document.getElementById("monat-input");
+    const monatsNamen = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+    sel.innerHTML = '<option value="">– Monat wählen –</option>';
+    res.monate.forEach(m => {
+      const [y,mo] = m.split("-");
+      const label = `${monatsNamen[parseInt(mo)-1]} ${y}`;
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    // Aktuellen Monat vorauswählen falls vorhanden
+    const heute = new Date().toISOString().slice(0,7);
+    if(res.monate.includes(heute)) sel.value = heute;
+    else if(res.monate.length>0) sel.value = res.monate[res.monate.length-1];
+  } catch(e) {}
+}
+
 async function exportLaden() {
   const monat=document.getElementById("monat-input").value;
-  if(!monat)return;
+  if(!monat||monat==="")return;
   const c=document.getElementById("export-result");
   c.innerHTML='<div style="color:var(--muted);font-size:15px">Lade…</div>';
   document.getElementById("csv-btn").style.display="none";
