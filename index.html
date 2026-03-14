@@ -81,6 +81,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 
 .list-wrap{display:flex;gap:0;position:relative}
 .personen-list{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.personen-list.kompakt-liste{gap:0}
 .person-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);border:1.5px solid transparent;background:var(--surface);cursor:pointer;transition:background .1s,border-color .1s;user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
 .person-row:active{opacity:.85}
 .person-row.checked{background:var(--green-bg);border-color:var(--green-brd)}
@@ -169,13 +170,20 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .stepper-val:focus{outline:none}
 .row-edit-btn{background:none;border:none;color:var(--border2);font-size:20px;cursor:pointer;padding:2px 6px;flex-shrink:0;line-height:1;vertical-align:middle}
 .row-edit-btn:hover{color:var(--muted)}
+/* Kompakt-Modus */
+.person-row.kompakt{padding:3px 8px;gap:6px;border-radius:3px;box-shadow:none;border:none;border-bottom:1px solid var(--border)}
+.person-row.kompakt .checkbox{width:14px;height:14px;border-radius:2px;font-size:9px;border-width:1.5px}
+.person-row.kompakt .person-name{font-size:12px;line-height:1.2}
+.person-row.kompakt .person-pos{display:none}
+.person-row.kompakt .row-edit-btn{font-size:11px;padding:0 3px}
+.alpha-divider.abt-group.kompakt{font-size:10px;font-weight:700;padding:5px 4px 2px;letter-spacing:.08em;border-bottom:1.5px solid var(--border2);margin-bottom:1px}
 </style>
 </head>
 <body>
 
 <div id="login-screen">
   <div class="login-card">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.1</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><div class="login-logo">Film · Set</div><div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.2</div></div>
     <div class="login-title">Catering Liste <span id="login-projekt" style="color:var(--accent);font-size:20px;font-weight:400"></span></div>
     <div class="field">
       <label for="pw-input">Passwort</label>
@@ -190,7 +198,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   <div class="topbar">
     <div class="topbar-brand">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.1</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.2</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -204,6 +212,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
         <option value="nachname">Nachname</option>
         <option value="vorname">Vorname</option>
         <option value="abteilung">Abteilung</option>
+        <option value="kompakt">Abt. kompakt</option>
       </select>
     </div>
     <button onclick="schnellNeuPerson()" title="Neue Person" style="width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 8px;flex-shrink:0;box-shadow:0 2px 6px rgba(26,107,60,.3);-webkit-tap-highlight-color:transparent">+</button>
@@ -417,7 +426,7 @@ function sortPersonen(arr, by) {
       const v=(a.vorname||"").localeCompare(b.vorname||"","de");
       return v!==0?v:a.nachname.localeCompare(b.nachname,"de");
     }
-    if(by==="abteilung") {
+    if(by==="abteilung"||by==="kompakt") {
       const p=(a.position||"").localeCompare(b.position||"","de");
       return p!==0?p:a.nachname.localeCompare(b.nachname,"de");
     }
@@ -583,8 +592,8 @@ function renderListe() {
       : (p.nachname[0]?.toUpperCase()||"#");
     if(b!==letzterGruppe){
       letzterGruppe=b;
-      if(sortierung==="abteilung") {
-        div=`<div class="alpha-divider abt-group">${b}</div>`;
+      if(sortierung==="abteilung"||sortierung==="kompakt") {
+        div=`<div class="alpha-divider abt-group${sortierung==="kompakt"?" kompakt":""}">${b}</div>`;
       } else {
         buchstaben.add(b);
         div=`<div class="alpha-divider" id="alpha-${b}">${b}</div>`;
@@ -599,7 +608,9 @@ function renderListe() {
     } else {
       nameHTML=`<span class="nachname">${p.nachname}</span><span class="vorname">${p.vorname?", "+p.vorname:""}</span>`;
     }
-    return div+`<div class="person-row${an?" checked":""}" data-id="${p.id}"
+    const istKompakt = sortierung==="kompakt";
+    const zeigPos = p.position && sortierung!=="abteilung" && sortierung!=="kompakt";
+    return div+`<div class="person-row${an?" checked":""}${istKompakt?" kompakt":""}" data-id="${p.id}"
       data-n="${p.nachname.toLowerCase()}"
       data-v="${(p.vorname||"").toLowerCase()}"
       data-p="${(p.position||"").toLowerCase()}">
@@ -607,7 +618,7 @@ function renderListe() {
       <div class="checkbox" onclick="toggle('${p.id}')" style="cursor:pointer">${an?"✓":""}</div>
       <div class="person-info" style="flex:1;min-width:0">
         <div class="person-name">${nameHTML}${canEdit?`<button class="row-edit-btn" onclick="editOeffnen('${p.id}')" title="Bearbeiten">✏</button>`:""}</div>
-        ${p.position?`<div class="person-pos">${p.position}</div>`:""}
+        ${zeigPos?`<div class="person-pos">${p.position}</div>`:""}
       </div>
     </div>`;
   }).join("");
@@ -615,7 +626,7 @@ function renderListe() {
 
   // Alphabet-Sidebar aufbauen (nur bei Nachname-Sortierung sinnvoll)
   const sidebar=document.getElementById("alpha-sidebar");
-  if(sortierung==="nachname") {
+  if(sortierung==="nachname"||sortierung==="vorname") {
     const alle="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     sidebar.innerHTML=alle.map(b=>
       `<span class="${buchstaben.has(b)?"":"inactive"}" onclick="alphaScroll('${b}')">${b}</span>`
@@ -626,6 +637,8 @@ function renderListe() {
     sidebar.style.display="none";
   }
 
+  const listEl=document.getElementById("personen-list");
+  listEl.className=sortierung==="kompakt"?"personen-list kompakt-liste":"personen-list";
   document.getElementById("count-anwesend").textContent=anwesendHeute.size;
   document.getElementById("count-gesamt").textContent=allePersonen.length;
   filterListe(document.getElementById("suche").value.toLowerCase());
