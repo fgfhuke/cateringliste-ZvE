@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Catering Liste</title>
+<!-- PWA -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Catering">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -68,7 +76,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .autosave-dot.saving{background:#f0a500;animation:pulse .8s ease-in-out infinite}
 .autosave-dot.saved{background:var(--green)}
 .autosave-dot.err{background:var(--red)}
+.autosave-dot.offline{background:#888;animation:pulse .8s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* Offline-Banner */
+.offline-banner{display:none;position:fixed;top:0;left:0;right:0;background:#555;color:#fff;font-size:13px;font-weight:600;text-align:center;padding:8px 16px;z-index:400;font-family:var(--mono)}
+.offline-banner.show{display:block}
 
 .search-wrap{position:relative;margin-bottom:12px}
 .search-wrap input{padding-left:52px;padding-right:44px;font-size:17px}
@@ -166,10 +178,15 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
   .tabs{padding:0 4px}
   .tab-sort-label{display:none}
 }
+/* iPad/Touch-Geräte die sich als Desktop tarnen */
+body.is-touch .mobile-hide{display:none!important}
+body.is-touch .tab-sort-label{display:none}
+body.is-touch .tab{font-size:13px;padding:10px 10px}
+body.is-touch .tabs{padding:0 4px}
 .stepper{display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--surface)}
-.stepper-btn{width:44px;height:44px;border:none;background:var(--surface2);font-size:24px;font-weight:300;cursor:pointer;color:var(--text);flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;line-height:1}
+.stepper-btn{width:44px;height:44px;border:none;background:var(--surface2);font-size:24px;font-weight:300;cursor:pointer;color:var(--text);flex-shrink:0;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;line-height:1;touch-action:manipulation}
 .stepper-btn:active{background:var(--border)}
-.stepper-val{flex:1;text-align:center;font-size:22px;font-weight:700;font-family:var(--mono);border:none;background:transparent;color:var(--text);min-width:0;padding:0;width:100%}
+.stepper-val{flex:1;text-align:center;font-size:22px;font-weight:700;font-family:var(--mono);border:none;background:transparent;color:var(--text);min-width:0;padding:0;width:100%;touch-action:manipulation}
 .stepper-val:focus{outline:none}
 .row-edit-btn{background:none;border:none;color:var(--border2);font-size:20px;cursor:pointer;padding:2px 6px;flex-shrink:0;line-height:1;vertical-align:middle}
 .row-edit-btn:hover{color:var(--muted)}
@@ -189,7 +206,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
       <div class="login-logo">Film · Set</div>
       <div style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em;line-height:1.6">
-        <div>V 1.4</div>
+        <div>V 1.2</div>
         <div style="font-size:10px">© JH 2026</div>
       </div>
     </div>
@@ -204,10 +221,11 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 </div>
 
 <div id="app">
+  <div class="offline-banner" id="offline-banner-desktop">⚡ Offline — <span id="offline-count-desktop">0</span> Änderung(en) ausstehend</div>
   <div class="topbar">
     <div class="topbar-brand" id="topbar-brand-btn" style="cursor:pointer;user-select:none;-webkit-user-select:none">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.5</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.2</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
   </div>
   <div class="tabs">
@@ -243,7 +261,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
         <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Komparsen</div>
         <div class="stepper">
           <button class="stepper-btn" onclick="stepperChange('komparsen-input',-1)">−</button>
-          <input class="stepper-val" type="number" id="komparsen-input" min="0" value="0" oninput="planAutosave()">
+          <input class="stepper-val" type="number" id="komparsen-input" min="0" value="0">
           <button class="stepper-btn" onclick="stepperChange('komparsen-input',1)">+</button>
         </div>
       </div>
@@ -251,7 +269,7 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
         <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Gäste</div>
         <div class="stepper">
           <button class="stepper-btn" onclick="stepperChange('gaeste-input',-1)">−</button>
-          <input class="stepper-val" type="number" id="gaeste-input" min="0" value="0" oninput="planAutosave()">
+          <input class="stepper-val" type="number" id="gaeste-input" min="0" value="0">
           <button class="stepper-btn" onclick="stepperChange('gaeste-input',1)">+</button>
         </div>
       </div>
@@ -429,6 +447,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxS-9nprjfCnUKnZUm8_8S3
 // ═══════════════════════════════════════════════════════════
 
 let SESSION_PW = "", allePersonen = [], anwesendHeute = new Set(), exportDaten = [], autosaveTimer = null, PROJEKT_KUERZEL = "", sortierung = "nachname", personenMitTeilnahme = new Set();
+let istOffline = false;
 
 function heute() { return new Date().toISOString().split("T")[0]; }
 function formatDatum(d) { if(!d)return""; const[y,m,t]=d.split("-"); return`${t}.${m}.${y}`; }
@@ -510,8 +529,14 @@ async function login() {
       document.getElementById("login-screen").style.display="none";
       document.getElementById("app").classList.add("active");
       allePersonen=sortNachname(mapPersonen(res.personen));
-      // Alle Personen mit jemals einer Teilnahme laden
       if(res.personenMitTeilnahme) personenMitTeilnahme = new Set(res.personenMitTeilnahme);
+      // Lokal speichern für Offline-Login
+      try {
+        localStorage.setItem("catering_pw", pw);
+        localStorage.setItem("catering_projekt", PROJEKT_KUERZEL);
+        localStorage.setItem("catering_personen", JSON.stringify(res.personen));
+        localStorage.setItem("catering_teilnahme_ids", JSON.stringify([...personenMitTeilnahme]));
+      } catch(e) {}
       heuteDatum(); await datumWechseln();
       renderPersonenverwaltung();
       document.getElementById("monat-input").value=heute().slice(0,7);
@@ -519,7 +544,28 @@ async function login() {
       document.getElementById("login-error").textContent="Falsches Passwort"; SESSION_PW="";
     }
   } catch(e) {
-    document.getElementById("login-error").textContent="Verbindungsfehler. API-URL prüfen."; SESSION_PW="";
+    // Offline? → lokale Daten nutzen
+    const gespeichertPw = localStorage.getItem("catering_pw");
+    if(gespeichertPw && pw === gespeichertPw) {
+      const personen = JSON.parse(localStorage.getItem("catering_personen")||"[]");
+      const teilnahmeIds = JSON.parse(localStorage.getItem("catering_teilnahme_ids")||"[]");
+      PROJEKT_KUERZEL = localStorage.getItem("catering_projekt")||"";
+      document.getElementById("login-projekt").textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
+      document.getElementById("topbar-projekt").textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
+      document.getElementById("login-screen").style.display="none";
+      document.getElementById("app").classList.add("active");
+      allePersonen = sortNachname(mapPersonen(personen));
+      personenMitTeilnahme = new Set(teilnahmeIds);
+      istOffline = true;
+      offlineBannerAktualisieren();
+      setAutosaveStatus("offline");
+      heuteDatum();
+      renderPersonenverwaltung();
+      toast("Offline-Modus — Änderungen werden synchronisiert wenn online");
+    } else {
+      document.getElementById("login-error").textContent = gespeichertPw ? "Verbindungsfehler. API-URL prüfen." : "Kein Internet — bitte erst online einloggen";
+      SESSION_PW="";
+    }
   }
   btn.disabled=false; btn.textContent="Anmelden";
 }
@@ -607,11 +653,131 @@ function schnellNeuPerson() {
   }
 })();
 
+
+// ── Offline-System ──
+const OFFLINE_KEY = "catering_offline_queue";
+
+function offlineQueueLaden() {
+  try { return JSON.parse(localStorage.getItem(OFFLINE_KEY)||"[]"); }
+  catch(e) { return []; }
+}
+function offlineQueueSpeichern(q) {
+  try { localStorage.setItem(OFFLINE_KEY, JSON.stringify(q)); } catch(e) {}
+}
+function offlineQueueHinzufuegen(eintrag) {
+  const q = offlineQueueLaden();
+  const idx = q.findIndex(e => e.datum===eintrag.datum && e.pid===eintrag.pid);
+  if(idx >= 0) q.splice(idx, 1);
+  q.push(eintrag);
+  offlineQueueSpeichern(q);
+  offlineBannerAktualisieren();
+}
+function offlineBannerAktualisieren() {
+  const q = offlineQueueLaden();
+  const anzahl = q.length;
+  ["desktop"].forEach(t => {
+    const banner = document.getElementById("offline-banner-"+t);
+    const count  = document.getElementById("offline-count-"+t);
+    if(!banner) return;
+    if(istOffline || anzahl > 0) {
+      banner.classList.add("show");
+      if(count) count.textContent = anzahl;
+    } else {
+      banner.classList.remove("show");
+    }
+  });
+}
+async function offlineQueueSync() {
+  const q = offlineQueueLaden();
+  if(q.length === 0) return;
+  setAutosaveStatus("saving");
+  const erfolgreich = [];
+  for(const e of q) {
+    try {
+      const res = await api("togglePerson", {datum:e.datum, pid:e.pid, an:e.an, name:e.name, abteilung:e.abteilung});
+      if(res && res.ok) erfolgreich.push(e);
+      else break;
+    } catch(err) { break; }
+  }
+  const rest = q.filter(e => !erfolgreich.some(f => f.datum===e.datum && f.pid===e.pid));
+  offlineQueueSpeichern(rest);
+  if(rest.length === 0) {
+    istOffline = false;
+    offlineBannerAktualisieren();
+    setAutosaveStatus("saved");
+    if(erfolgreich.length > 0) toast("✓ "+erfolgreich.length+" Änderungen synchronisiert");
+  }
+}
+
+window.addEventListener("online",  () => { istOffline=false; offlineBannerAktualisieren(); setTimeout(offlineQueueSync, 1000); });
+window.addEventListener("offline", () => { istOffline=true;  offlineBannerAktualisieren(); setAutosaveStatus("offline"); });
+
+// ── Service Worker ──
+if("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", {scope: "./"})
+      .then(reg => {
+        reg.addEventListener("updatefound", () => {
+          const newSW = reg.installing;
+          newSW.addEventListener("statechange", () => {
+            if(newSW.state === "installed" && navigator.serviceWorker.controller) {
+              toast("App-Update verfügbar — Seite neu laden");
+            }
+          });
+        });
+      })
+      .catch(err => console.log("SW Fehler:", err));
+  });
+}
+
+// Debounce-Timer pro Zähler
+const zaehlerTimer = {};
+
+// Touch-Gerät erkennen (auch iPad mit Desktop-Mode)
+(function(){
+  const isTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+  const isIpad = /iPad/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if(isTouch || isIpad) {
+    document.body.classList.add("is-touch");
+  }
+})();
+
 function stepperChange(id, delta) {
   const inp = document.getElementById(id);
   const val = parseInt(inp.value)||0;
   inp.value = Math.max(0, val + delta);
-  planAutosave();
+  const datum = document.getElementById("datum-input").value;
+  if(!datum) return;
+  setAutosaveStatus("pending");
+  // Debounce: erst nach 800ms speichern (schnelles Tippen sammeln)
+  clearTimeout(zaehlerTimer[id]);
+  zaehlerTimer[id] = setTimeout(() => {
+    const isKomp = id==="komparsen-input";
+    speichereZaehler(datum,
+      isKomp ? "KOMP01" : "GAEST01",
+      isKomp ? "Komparsen" : "Gäste",
+      isKomp ? "10 Komparsen" : "11 Gäste",
+      parseInt(document.getElementById(id).value)||0);
+  }, 800);
+}
+
+async function speichereZaehler(datum, pid, name, abt, wert) {
+  if(istOffline || !navigator.onLine) {
+    offlineQueueHinzufuegen({action:"zaehler", datum, pid, name, abteilung:abt, wert});
+    setAutosaveStatus("offline");
+    return;
+  }
+  try {
+    const res = await api("setZaehler", {datum, pid, name, abteilung:abt, wert});
+    if(res.ok) setAutosaveStatus("saved");
+    else setAutosaveStatus("err");
+  } catch(e) {
+    istOffline = true;
+    offlineBannerAktualisieren();
+    offlineQueueHinzufuegen({action:"zaehler", datum, pid, name, abteilung:abt, wert});
+    setAutosaveStatus("offline");
+  }
 }
 
 function heuteDatum() {
@@ -755,10 +921,92 @@ function alphaScroll(b) {
   setTimeout(()=>document.querySelectorAll(".alpha-sidebar span").forEach(s=>s.classList.remove("active")),400);
 }
 
+// Queue für ausstehende Toggle-Operationen
+const toggleQueue = [];
+let verarbeiteQueue = false;
+
 function toggle(id) {
-  if(anwesendHeute.has(id)) anwesendHeute.delete(id); else anwesendHeute.add(id);
+  const war = anwesendHeute.has(id);
+  if(war) anwesendHeute.delete(id); else anwesendHeute.add(id);
   renderListe();
-  planAutosave();
+  const p = allePersonen.find(x=>x.id===id);
+  if(!p) return;
+  const datum = document.getElementById("datum-input").value;
+  if(!datum) return;
+  // In Queue stellen — doppelte Einträge für gleiche Person zusammenfassen
+  const existing = toggleQueue.findIndex(q=>q.pid===id);
+  if(existing >= 0) {
+    // Gleiche Person nochmal getoggled — aus Queue entfernen (heben sich auf)
+    toggleQueue.splice(existing, 1);
+  } else {
+    toggleQueue.push({datum, pid:id, an:!war, p});
+  }
+  verarbeiteToggleQueue();
+}
+
+async function verarbeiteToggleQueue() {
+  if(verarbeiteQueue || toggleQueue.length === 0) return;
+  verarbeiteQueue = true;
+  setAutosaveStatus("saving");
+  while(toggleQueue.length > 0) {
+    const {datum, pid, an, p} = toggleQueue.shift();
+    const name = p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname;
+    const abteilung = p.position||"";
+    // Offline-Check vor dem Request
+    if(istOffline || !navigator.onLine) {
+      offlineQueueHinzufuegen({datum, pid, an, name, abteilung});
+      while(toggleQueue.length > 0) {
+        const next = toggleQueue.shift();
+        const nname = next.p.vorname ? `${next.p.nachname}, ${next.p.vorname}` : next.p.nachname;
+        offlineQueueHinzufuegen({datum:next.datum, pid:next.pid, an:next.an, name:nname, abteilung:next.p.position||""});
+      }
+      offlineBannerAktualisieren();
+      setAutosaveStatus("offline");
+      break;
+    }
+    try {
+      const res = await api("togglePerson", {datum, pid, an, name, abteilung});
+      if(res.ok) {
+        if(an) personenMitTeilnahme.add(pid);
+      } else if(res.error === "Offline" || !navigator.onLine) {
+        // Service Worker meldet Offline
+        istOffline = true;
+        offlineQueueHinzufuegen({datum, pid, an, name, abteilung});
+        while(toggleQueue.length > 0) {
+          const next = toggleQueue.shift();
+          const nname = next.p.vorname ? `${next.p.nachname}, ${next.p.vorname}` : next.p.nachname;
+          offlineQueueHinzufuegen({datum:next.datum, pid:next.pid, an:next.an, name:nname, abteilung:next.p.position||""});
+        }
+        offlineBannerAktualisieren();
+        setAutosaveStatus("offline");
+        break;
+      } else {
+        if(an) anwesendHeute.delete(pid); else anwesendHeute.add(pid);
+        renderListe();
+        setAutosaveStatus("err");
+        zeigeFehlerOverlay("Server-Fehler: " + (res.error||""));
+      }
+    } catch(e) {
+      istOffline = true;
+      offlineQueueHinzufuegen({datum, pid, an, name, abteilung});
+      while(toggleQueue.length > 0) {
+        const next = toggleQueue.shift();
+        const nname = next.p.vorname ? `${next.p.nachname}, ${next.p.vorname}` : next.p.nachname;
+        offlineQueueHinzufuegen({datum:next.datum, pid:next.pid, an:next.an, name:nname, abteilung:next.p.position||""});
+      }
+      offlineBannerAktualisieren();
+      setAutosaveStatus("offline");
+      renderListe();
+      break;
+    }
+  }
+  verarbeiteQueue = false;
+  if(toggleQueue.length === 0 && !istOffline) {
+    setAutosaveStatus("saved");
+    renderListe();
+  } else {
+    verarbeiteToggleQueue();
+  }
 }
 
 // ── Autosave ──
@@ -770,8 +1018,18 @@ function planAutosave() {
 
 // Letzter Speicher-Zustand für Retry
 let letzterSpeicherversuch = null;
+let speichertGerade = false;
+let speichernAusstehend = false;
 
 async function autosave() {
+  if(istOffline || !navigator.onLine) { setAutosaveStatus("offline"); return; }
+  // Wenn gerade gespeichert wird: merken und später nochmal
+  if (speichertGerade) {
+    speichernAusstehend = true;
+    return;
+  }
+  speichertGerade = true;
+  speichernAusstehend = false;
   const datum=document.getElementById("datum-input").value;
   if(!datum)return;
   setAutosaveStatus("saving");
@@ -785,43 +1043,35 @@ async function autosave() {
   letzterSpeicherversuch = {datum, eintraege, komparsen, gaeste};
 
   try {
-    // Längeres Timeout: 45 Sekunden
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
-    const params = new URLSearchParams({
-      password: SESSION_PW, action: "setTeilnahme",
-      data: encodeURIComponent(JSON.stringify({datum,eintraege,komparsen,gaeste}))
-    });
-    const r = await fetch(`${API_URL}?${params}`, {
-      method:"GET", redirect:"follow", signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-    const text = await r.text();
-    let res;
-    try { res = JSON.parse(text); } catch(e) { res = {ok:false,error:"Ungültige Antwort"}; }
-
+    const res = await api("setTeilnahme", {datum, eintraege, komparsen, gaeste});
     if(res.ok) {
       setAutosaveStatus("saved");
       anwesendHeute.forEach(id => personenMitTeilnahme.add(id));
       renderListe();
-      letzterSpeicherversuch = null; // Kein Retry nötig
+      letzterSpeicherversuch = null;
     } else {
       setAutosaveStatus("err");
       zeigeFehlerOverlay("Server-Fehler: " + (res.error||"Unbekannt"));
     }
   } catch(e) {
-    if(e.name === "AbortError") {
-      // Timeout — Daten könnten trotzdem gespeichert sein
-      setAutosaveStatus("err");
-      zeigeFehlerOverlay("Zeitüberschreitung — die Daten wurden möglicherweise trotzdem gespeichert. Prüfe das Sheet bevor du weitermachst.");
-    } else {
-      setAutosaveStatus("err");
-      zeigeFehlerOverlay("Verbindungsfehler: " + e.message);
+    istOffline = true;
+    offlineBannerAktualisieren();
+    setAutosaveStatus("offline");
+    eintraege.forEach(e => {
+      offlineQueueHinzufuegen({datum, pid:e.id, an:true, name:e.name, abteilung:e.abteilung});
+    });
+  } finally {
+    speichertGerade = false;
+    // Wenn während des Speicherns neue Änderungen kamen: nochmal speichern
+    if (speichernAusstehend) {
+      speichernAusstehend = false;
+      setTimeout(autosave, 300);
     }
   }
 }
 
 function zeigeFehlerOverlay(text) {
+  if(istOffline) return; // Im Offline-Modus kein Overlay
   document.getElementById("fehler-text").textContent = text;
   document.getElementById("fehler-overlay").style.display = "flex";
 }
@@ -891,6 +1141,7 @@ function setAutosaveStatus(s) {
   if(s==="saving")  {text.textContent="Speichere…";dot.classList.add("saving");}
   if(s==="saved")   {text.textContent=`Gespeichert ${uhr}`;dot.classList.add("saved");}
   if(s==="err")     {text.textContent="Fehler beim Speichern";dot.classList.add("err");}
+  if(s==="offline") {text.textContent="Offline — Änderungen ausstehend";dot.classList.add("offline");}
 }
 
 // ── Personenverwaltung ──
