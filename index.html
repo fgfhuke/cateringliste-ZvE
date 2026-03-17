@@ -268,7 +268,7 @@ body.is-touch .tabs{padding:0 4px}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
       <div class="login-logo">Film · Set</div>
       <div style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em;line-height:1.6">
-        <div>V 2.6</div>
+        <div>V 2.7</div>
         <div style="font-size:10px">© JH 2026</div>
       </div>
     </div>
@@ -288,7 +288,7 @@ body.is-touch .tabs{padding:0 4px}
     <button class="btn-icon" id="topbar-back-touch" onclick="zurückZuTouch()" title="Zurück zur mobilen Ansicht" style="display:none;font-size:22px;color:var(--accent)">←</button>
     <div class="topbar-brand" id="topbar-brand-btn" style="cursor:pointer;user-select:none;-webkit-user-select:none">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.6</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.7</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden" style="padding:8px;background:transparent;border:none;color:var(--muted);cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
   </div>
   <div class="tabs">
@@ -514,7 +514,7 @@ body.is-touch .tabs{padding:0 4px}
   <div class="touch-topbar">
     <div class="touch-brand" id="touch-brand-btn" style="font-size:17px">Catering <span id="touch-projekt" style="opacity:.7;font-size:13px"></span></div>
     <span class="touch-save-status" id="touch-save-status"></span>
-    <span style="font-family:var(--mono);font-size:13px;color:var(--border2);letter-spacing:.08em" id="touch-version">V 2.6</span>
+    <span style="font-family:var(--mono);font-size:13px;color:var(--border2);letter-spacing:.08em" id="touch-version">V 2.7</span>
     <button class="btn-icon" onclick="logout()" style="font-size:18px;color:var(--muted)" style="padding:8px;background:transparent;border:none;color:var(--muted);cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
   </div>
 
@@ -559,9 +559,16 @@ body.is-touch .tabs{padding:0 4px}
 
   <!-- PANEL: Komparsen -->
   <div class="touch-panel" id="touch-panel-komparsen">
-    <div class="touch-komp-panel">
-      <div class="touch-komp-label" style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px">Komparsen</div>
-      <div class="touch-komp-label" style="font-size:14px;margin-bottom:24px">Anzahl heute</div>
+    <!-- Zurück-Button -->
+    <div style="padding:12px 16px 0">
+      <button onclick="touchZurueckZuCatering()" style="display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--accent);font-size:17px;font-weight:600;cursor:pointer;padding:4px 0;font-family:var(--sans)">
+        ‹ Zurück
+      </button>
+    </div>
+    <!-- Inhalt oben ausgerichtet -->
+    <div style="padding:24px 24px 0;display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div style="font-size:22px;font-weight:700;color:var(--text)">Komparsen</div>
+      <div style="font-size:14px;color:var(--muted)">Anzahl heute</div>
       <div style="display:flex;align-items:center;gap:0;border:2px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface);width:100%;max-width:320px">
         <button onclick="touchStepperChange(-1)" style="width:72px;height:80px;border:none;background:var(--surface2);font-size:40px;font-weight:300;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;flex-shrink:0">−</button>
         <input type="number" id="touch-komp-input" min="0" value="0"
@@ -569,7 +576,7 @@ body.is-touch .tabs{padding:0 4px}
           style="flex:1;text-align:center;font-size:52px;font-weight:700;font-family:var(--mono);border:none;background:transparent;color:var(--text);padding:8px 0;touch-action:manipulation;width:100%;outline:none;-webkit-appearance:none">
         <button onclick="touchStepperChange(1)" style="width:72px;height:80px;border:none;background:var(--surface2);font-size:40px;font-weight:300;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;flex-shrink:0">+</button>
       </div>
-      <div style="margin-top:20px;font-size:14px;color:var(--muted);font-family:var(--mono)" id="touch-komp-status">–</div>
+      <div style="font-size:14px;color:var(--muted);font-family:var(--mono)" id="touch-komp-status">–</div>
     </div>
   </div>
 
@@ -2072,6 +2079,13 @@ function touchStepperChange(delta) {
   const mainInp = document.getElementById("komparsen-input");
   if(mainInp) mainInp.value = inp.value;
   touchZaehlerSpeichern();
+}
+
+function touchZurueckZuCatering() {
+  document.querySelectorAll(".touch-tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".touch-panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("touch-tab-catering").classList.add("active");
+  document.getElementById("touch-panel-catering").classList.add("active");
 }
 
 function touchZaehlerSpeichern() {
