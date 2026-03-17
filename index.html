@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Catering Liste</title>
-<!-- PWA -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- PWA: Vollbild auf iOS/Android -->
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="apple-touch-icon.png">
-<link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Catering">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -76,11 +76,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .autosave-dot.saving{background:#f0a500;animation:pulse .8s ease-in-out infinite}
 .autosave-dot.saved{background:var(--green)}
 .autosave-dot.err{background:var(--red)}
-.autosave-dot.offline{background:#888;animation:pulse .8s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-/* Offline-Banner */
-.offline-banner{display:none;position:fixed;top:0;left:0;right:0;background:#555;color:#fff;font-size:13px;font-weight:600;text-align:center;padding:8px 16px;z-index:400;font-family:var(--mono)}
-.offline-banner.show{display:block}
 
 .search-wrap{position:relative;margin-bottom:12px}
 .search-wrap input{padding-left:52px;padding-right:44px;font-size:17px}
@@ -151,8 +147,14 @@ textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:15px
 .anzahl-badge{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent)}
 
 
+/* Offline-Banner */
+.offline-banner{display:none;position:fixed;top:0;left:0;right:0;background:#555;color:#fff;font-size:14px;font-weight:600;text-align:center;padding:8px 16px;z-index:400;font-family:var(--mono)}
+.offline-banner.show{display:block}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--surface);border-radius:24px;padding:12px 24px;font-size:15px;font-weight:500;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.18)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Gespeichert-Bestätigung */
+.saved-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:var(--green);color:#fff;border-radius:16px;padding:20px 40px;font-size:24px;font-weight:700;opacity:0;pointer-events:none;z-index:998;transition:opacity .15s,transform .15s;box-shadow:0 4px 24px rgba(26,107,60,.4)}
+.saved-flash.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 /* Autosave-Fehler: roter Balken oben */
 .save-error-bar{position:fixed;top:0;left:0;right:0;background:var(--red);color:#fff;font-size:13px;font-weight:600;text-align:center;padding:6px 16px;z-index:300;cursor:pointer;animation:slidedown .3s ease}
 @keyframes slidedown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
@@ -197,6 +199,66 @@ body.is-touch .tabs{padding:0 4px}
 .person-row.kompakt .person-pos{display:none}
 .person-row.kompakt .row-edit-btn{font-size:12px;padding:0 3px}
 .alpha-divider.abt-group.kompakt{font-size:13px;font-weight:700;color:#d4740a;padding:6px 4px 3px;letter-spacing:.02em;border-bottom:1.5px solid var(--border2);margin-bottom:1px}
+
+/* ══ TOUCH INTERFACE (iPad/iPhone) ══ */
+#app-touch{display:none;height:100dvh;flex-direction:column;background:var(--bg);overflow:hidden}
+#app-touch.active{display:flex}
+
+.touch-topbar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 16px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.touch-brand{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;flex:1;cursor:pointer;user-select:none;-webkit-user-select:none}
+.touch-save-status{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+
+.touch-tabs{background:var(--surface);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:0}
+.touch-tab{font-size:18px;font-weight:600;color:var(--muted);padding:12px 14px;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;user-select:none;white-space:nowrap}
+.touch-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.touch-tab-spacer{flex:1}
+.touch-new-btn{font-size:13px;font-weight:600;color:var(--accent);padding:8px 12px;cursor:pointer;white-space:nowrap;background:var(--accent-bg);border:1.5px solid var(--green-brd);border-radius:var(--r);margin:6px 0}
+
+.touch-panel{display:none;flex:1;flex-direction:column;overflow:hidden}
+.touch-panel.active{display:flex}
+
+/* Suchfeld oben fixiert */
+.touch-search-bar{padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border)}
+.touch-search-wrap{position:relative}
+.touch-search-wrap input{width:100%;padding:14px 44px 14px 48px;font-size:20px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);font-family:var(--sans);outline:none;-webkit-appearance:none}
+.touch-search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,107,60,.12)}
+.touch-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:26px;color:var(--muted);pointer-events:none}
+.touch-search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--border);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--muted)}
+
+/* Ergebnisliste scrollbar */
+.touch-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 14px 32px}
+
+/* Große Eintrags-Zeilen für Selbst-Eintragung */
+.touch-person-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--r);border:1.5px solid transparent;background:var(--surface);cursor:pointer;transition:background .1s,border-color .1s;user-select:none;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow);margin-bottom:4px}
+.touch-person-row.checked{background:var(--green-bg);border-color:var(--green-brd)}
+.touch-person-row:active{opacity:.85}
+.touch-checkbox{width:32px;height:32px;border-radius:6px;border:2px solid var(--border2);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;transition:background .15s,border-color .15s}
+.touch-person-row.checked .touch-checkbox{background:var(--green);border-color:var(--green);color:#fff}
+.touch-person-name{font-size:20px;font-weight:600;color:var(--text);line-height:1.2}
+.touch-person-row.checked .touch-person-name{color:var(--accent)}
+.touch-person-pos{font-size:13px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+
+/* Kein-Ergebnis + Neuen anlegen */
+.touch-no-result{padding:24px 0;text-align:center;color:var(--muted);font-size:16px}
+.touch-add-hint{margin-top:12px;padding:16px;background:var(--accent-bg);border:1.5px solid var(--green-brd);border-radius:var(--r);text-align:center;cursor:pointer}
+.touch-add-hint .hint-name{font-size:18px;font-weight:600;color:var(--accent);margin-bottom:4px}
+.touch-add-hint .hint-sub{font-size:13px;color:var(--muted)}
+
+/* Neue Person Dialog (Touch) */
+.touch-new-dialog{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;align-items:flex-end;justify-content:center}
+.touch-new-dialog.open{display:flex}
+.touch-new-sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:600px;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
+.touch-new-sheet h3{font-size:18px;font-weight:600;margin-bottom:16px}
+
+/* Komparsen-Panel */
+.touch-komp-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:24px}
+.touch-komp-label{font-size:16px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.touch-komp-stepper{display:flex;align-items:center;gap:0;border:2px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface);width:100%;max-width:320px}
+.touch-komp-btn{width:72px;height:72px;border:none;background:var(--surface2);font-size:36px;font-weight:300;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.touch-komp-btn:active{background:var(--border)}
+.touch-komp-val{flex:1;text-align:center;font-size:48px;font-weight:700;font-family:var(--mono);border:none;background:transparent;color:var(--text);padding:8px 0;touch-action:manipulation}
+.touch-komp-val:focus{outline:none}
+.touch-save-indicator{font-size:13px;color:var(--muted);font-family:var(--mono);text-align:center}
 </style>
 </head>
 <body>
@@ -206,7 +268,7 @@ body.is-touch .tabs{padding:0 4px}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
       <div class="login-logo">Film · Set</div>
       <div style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em;line-height:1.6">
-        <div>V 1.2</div>
+        <div>V 2.6</div>
         <div style="font-size:10px">© JH 2026</div>
       </div>
     </div>
@@ -223,10 +285,11 @@ body.is-touch .tabs{padding:0 4px}
 <div id="app">
   <div class="offline-banner" id="offline-banner-desktop">⚡ Offline — <span id="offline-count-desktop">0</span> Änderung(en) ausstehend</div>
   <div class="topbar">
+    <button class="btn-icon" id="topbar-back-touch" onclick="zurückZuTouch()" title="Zurück zur mobilen Ansicht" style="display:none;font-size:22px;color:var(--accent)">←</button>
     <div class="topbar-brand" id="topbar-brand-btn" style="cursor:pointer;user-select:none;-webkit-user-select:none">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 1.2</div>
-    <button class="btn-icon" onclick="logout()" title="Abmelden">↩</button>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 2.6</div>
+    <button class="btn-icon" onclick="logout()" title="Abmelden" style="padding:8px;background:transparent;border:none;color:var(--muted);cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
   </div>
   <div class="tabs">
     <div class="tab active" data-tab="anwesenheit">Teilnahme</div>
@@ -418,6 +481,7 @@ body.is-touch .tabs{padding:0 4px}
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="saved-flash" id="saved-flash">✓ Gespeichert</div>
 
 <!-- Fehler-Overlay -->
 <div id="fehler-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:20px">
@@ -441,13 +505,124 @@ body.is-touch .tabs{padding:0 4px}
   </div>
 </div>
 
+<!-- ══ TOUCH INTERFACE ══════════════════════════════════════ -->
+<div id="app-touch">
+
+  <div class="offline-banner" id="offline-banner-touch">⚡ Offline — <span id="offline-count-touch">0</span> Änderung(en) ausstehend</div>
+
+  <!-- Topbar -->
+  <div class="touch-topbar">
+    <div class="touch-brand" id="touch-brand-btn" style="font-size:17px">Catering <span id="touch-projekt" style="opacity:.7;font-size:13px"></span></div>
+    <span class="touch-save-status" id="touch-save-status"></span>
+    <span style="font-family:var(--mono);font-size:13px;color:var(--border2);letter-spacing:.08em" id="touch-version">V 2.6</span>
+    <button class="btn-icon" onclick="logout()" style="font-size:18px;color:var(--muted)" style="padding:8px;background:transparent;border:none;color:var(--muted);cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+  </div>
+
+  <!-- Header-Bereich -->
+  <div style="background:var(--surface);border-bottom:1.5px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.06)">
+    <!-- Erste Zeile: Überschrift = Tab Catering Liste -->
+    <div class="touch-tab active" data-touch-tab="catering" id="touch-tab-catering"
+      style="display:block;text-align:center;padding:14px 16px 10px;border-bottom:none;width:100%;font-size:15px;background:linear-gradient(135deg,#e8f4ed 0%,#d0ead8 100%)">
+      <div style="font-size:26px;font-weight:700;color:var(--text);line-height:1.2">Catering Liste</div>
+      <div style="font-size:18px;font-weight:600;color:var(--accent);margin-top:3px" id="touch-datum-header"></div>
+    </div>
+    <!-- Zweite Zeile: Komparsen links, Neuer Teilnehmer rechts -->
+    <div style="display:flex;align-items:center;padding:0 12px 0;border-top:1px solid var(--border)">
+      <div class="touch-tab" data-touch-tab="komparsen" style="font-size:15px;padding:10px 14px">
+        Komparsen
+      </div>
+      <div style="flex:1"></div>
+      <div class="touch-new-btn" onclick="touchNeuePersonOeffnen()">+ Neuer Teilnehmer</div>
+    </div>
+  </div>
+
+  <!-- PANEL: Catering Liste -->
+  <div class="touch-panel active" id="touch-panel-catering">
+    <div style="padding:18px 16px 0;background:var(--bg);text-align:center">
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:12px">Hier kannst du dich eintragen</div>
+    </div>
+    <div style="padding:0 16px 12px;background:var(--bg);display:flex;justify-content:center">
+      <div style="position:relative;width:85%;max-width:480px">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:32px;color:var(--accent);pointer-events:none;line-height:1">⌕</span>
+        <input type="text" id="touch-suche" placeholder="Nachname finden…"
+          oninput="touchSuche()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          style="width:100%;padding:16px 44px 16px 54px;font-size:20px;border:2px solid var(--green-brd);border-radius:12px;background:#e8f4ed;color:var(--text);font-family:var(--sans);outline:none;-webkit-appearance:none">
+        <button id="touch-suche-clear" onclick="touchSucheLeeren()" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--border);border:none;border-radius:50%;width:30px;height:30px;font-size:16px;color:var(--muted);cursor:pointer;align-items:center;justify-content:center">×</button>
+      </div>
+    </div>
+    <div class="touch-list" id="touch-list">
+      <div style="color:var(--muted);font-size:16px;text-align:center;padding:40px 0">
+        Namen eingeben um zu suchen…
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: Komparsen -->
+  <div class="touch-panel" id="touch-panel-komparsen">
+    <div class="touch-komp-panel">
+      <div class="touch-komp-label" style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px">Komparsen</div>
+      <div class="touch-komp-label" style="font-size:14px;margin-bottom:24px">Anzahl heute</div>
+      <div style="display:flex;align-items:center;gap:0;border:2px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface);width:100%;max-width:320px">
+        <button onclick="touchStepperChange(-1)" style="width:72px;height:80px;border:none;background:var(--surface2);font-size:40px;font-weight:300;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;flex-shrink:0">−</button>
+        <input type="number" id="touch-komp-input" min="0" value="0"
+          onfocus="this.select()" oninput="touchZaehlerSpeichern()"
+          style="flex:1;text-align:center;font-size:52px;font-weight:700;font-family:var(--mono);border:none;background:transparent;color:var(--text);padding:8px 0;touch-action:manipulation;width:100%;outline:none;-webkit-appearance:none">
+        <button onclick="touchStepperChange(1)" style="width:72px;height:80px;border:none;background:var(--surface2);font-size:40px;font-weight:300;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;flex-shrink:0">+</button>
+      </div>
+      <div style="margin-top:20px;font-size:14px;color:var(--muted);font-family:var(--mono)" id="touch-komp-status">–</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Neue Person Dialog (Touch) -->
+<div class="touch-new-dialog" id="touch-new-dialog">
+  <div class="touch-new-sheet">
+    <h3>Neuer Teilnehmer</h3>
+    <div class="field" style="margin-bottom:10px">
+      <label style="font-size:11px;margin-bottom:4px">Nachname / Firma</label>
+      <input type="text" id="touch-new-nachname" placeholder="Name / Firma" style="font-size:17px;padding:10px 12px">
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label style="font-size:11px;margin-bottom:4px">Vorname</label>
+      <input type="text" id="touch-new-vorname" placeholder="Vorname" style="font-size:17px;padding:10px 12px">
+    </div>
+    <div class="field" style="margin-bottom:16px">
+      <label style="font-size:11px;margin-bottom:4px">Abteilung</label>
+      <select id="touch-new-abt" style="font-size:17px;padding:10px 12px">
+          <option value="">– Abteilung –</option>
+          <option value="01 Regie">01 Regie</option>
+          <option value="02 Produktion">02 Produktion</option>
+          <option value="03 Kamera / Ton">03 Kamera / Ton</option>
+          <option value="04 Kostüm">04 Kostüm</option>
+          <option value="05 Licht">05 Licht</option>
+          <option value="06 Maske">06 Maske</option>
+          <option value="07 Szenenbild">07 Szenenbild</option>
+          <option value="08 Produzenten">08 Produzenten</option>
+          <option value="09 Cast">09 Cast</option>
+          <option value="10 Komparsen">10 Komparsen</option>
+          <option value="11 Gäste">11 Gäste</option>
+          <option value="12 Sonstige">12 Sonstige</option>
+      </select>
+    </div>
+    <div class="autosave-bar" id="touch-new-status" style="display:none;padding:4px 0 8px">
+      <div class="autosave-dot saving"></div>
+      <span>Ich speichere…</span>
+    </div>
+    <div class="error-msg" id="touch-new-error"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-primary btn-sm" id="touch-new-save-btn" onclick="touchPersonAnlegen()" style="flex:1;font-size:16px;padding:12px">Anlegen & eintragen</button>
+      <button class="btn btn-ghost btn-sm" onclick="touchNeuePersonSchliessen()" style="font-size:15px">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══ KONFIGURATION ══════════════════════════════════════════
 const API_URL = "https://script.google.com/macros/s/AKfycbxS-9nprjfCnUKnZUm8_8S3cZ6trVLJemNg_BERDj2PPIK5uJH2Te62ze4_j7fAuEY9ng/exec";
 // ═══════════════════════════════════════════════════════════
 
 let SESSION_PW = "", allePersonen = [], anwesendHeute = new Set(), exportDaten = [], autosaveTimer = null, PROJEKT_KUERZEL = "", sortierung = "nachname", personenMitTeilnahme = new Set();
-let istOffline = false;
 
 function heute() { return new Date().toISOString().split("T")[0]; }
 function formatDatum(d) { if(!d)return""; const[y,m,t]=d.split("-"); return`${t}.${m}.${y}`; }
@@ -520,31 +695,9 @@ async function login() {
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Prüfe…';
   document.getElementById("login-error").textContent="";
   SESSION_PW=pw;
-  try {
-    const res=await api("getPersonen");
-    if(res.ok) {
-      PROJEKT_KUERZEL = res.projekt || "";
-      document.getElementById("login-projekt").textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
-      document.getElementById("topbar-projekt").textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
-      document.getElementById("login-screen").style.display="none";
-      document.getElementById("app").classList.add("active");
-      allePersonen=sortNachname(mapPersonen(res.personen));
-      if(res.personenMitTeilnahme) personenMitTeilnahme = new Set(res.personenMitTeilnahme);
-      // Lokal speichern für Offline-Login
-      try {
-        localStorage.setItem("catering_pw", pw);
-        localStorage.setItem("catering_projekt", PROJEKT_KUERZEL);
-        localStorage.setItem("catering_personen", JSON.stringify(res.personen));
-        localStorage.setItem("catering_teilnahme_ids", JSON.stringify([...personenMitTeilnahme]));
-      } catch(e) {}
-      heuteDatum(); await datumWechseln();
-      renderPersonenverwaltung();
-      document.getElementById("monat-input").value=heute().slice(0,7);
-    } else {
-      document.getElementById("login-error").textContent="Falsches Passwort"; SESSION_PW="";
-    }
-  } catch(e) {
-    // Offline? → lokale Daten nutzen
+
+  // Offline? → lokale Daten nutzen
+  if(!navigator.onLine) {
     const gespeichertPw = localStorage.getItem("catering_pw");
     if(gespeichertPw && pw === gespeichertPw) {
       const personen = JSON.parse(localStorage.getItem("catering_personen")||"[]");
@@ -553,19 +706,60 @@ async function login() {
       document.getElementById("login-projekt").textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
       document.getElementById("topbar-projekt").textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
       document.getElementById("login-screen").style.display="none";
-      document.getElementById("app").classList.add("active");
       allePersonen = sortNachname(mapPersonen(personen));
       personenMitTeilnahme = new Set(teilnahmeIds);
+      // Offline-Mode aktivieren
       istOffline = true;
       offlineBannerAktualisieren();
       setAutosaveStatus("offline");
+      const isTouch = navigator.maxTouchPoints > 0 || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if(isTouch) { document.getElementById("app-touch").classList.add("active"); touchInit(); }
+      else { document.getElementById("app").classList.add("active"); renderPersonenverwaltung(); }
       heuteDatum();
-      renderPersonenverwaltung();
+      btn.disabled=false; btn.textContent="Anmelden";
       toast("Offline-Modus — Änderungen werden synchronisiert wenn online");
+      return;
     } else {
-      document.getElementById("login-error").textContent = gespeichertPw ? "Verbindungsfehler. API-URL prüfen." : "Kein Internet — bitte erst online einloggen";
+      document.getElementById("login-error").textContent = gespeichertPw ? "Falsches Passwort" : "Kein Internet — bitte erst online einloggen";
+      btn.disabled=false; btn.textContent="Anmelden";
       SESSION_PW="";
+      return;
     }
+  }
+
+  try {
+    const res=await api("getPersonen");
+    if(res.ok) {
+      PROJEKT_KUERZEL = res.projekt || "";
+      document.getElementById("login-projekt").textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
+      document.getElementById("topbar-projekt").textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
+      document.getElementById("login-screen").style.display="none";
+      allePersonen=sortNachname(mapPersonen(res.personen));
+      if(res.personenMitTeilnahme) personenMitTeilnahme = new Set(res.personenMitTeilnahme);
+      // Login-Daten lokal speichern für Offline-Nutzung
+      try {
+        localStorage.setItem("catering_pw", pw);
+        localStorage.setItem("catering_projekt", PROJEKT_KUERZEL);
+        localStorage.setItem("catering_personen", JSON.stringify(res.personen));
+        localStorage.setItem("catering_teilnahme_ids", JSON.stringify([...personenMitTeilnahme]));
+      } catch(e) {}
+      heuteDatum(); await datumWechseln();
+      // Touch-Gerät → Touch Interface, Desktop → normales Interface
+      const isTouch = navigator.maxTouchPoints > 0 ||
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if(isTouch) {
+        document.getElementById("app-touch").classList.add("active");
+        touchInit();
+      } else {
+        document.getElementById("app").classList.add("active");
+        renderPersonenverwaltung();
+        document.getElementById("monat-input").value=heute().slice(0,7);
+      }
+    } else {
+      document.getElementById("login-error").textContent="Falsches Passwort"; SESSION_PW="";
+    }
+  } catch(e) {
+    document.getElementById("login-error").textContent="Verbindungsfehler. API-URL prüfen."; SESSION_PW="";
   }
   btn.disabled=false; btn.textContent="Anmelden";
 }
@@ -608,6 +802,7 @@ function logout() {
   SESSION_PW="";
   document.getElementById("login-screen").style.display="flex";
   document.getElementById("app").classList.remove("active");
+  document.getElementById("app-touch").classList.remove("active");
   document.getElementById("pw-input").value="";
 }
 
@@ -653,94 +848,22 @@ function schnellNeuPerson() {
   }
 })();
 
-
-// ── Offline-System ──
-const OFFLINE_KEY = "catering_offline_queue";
-
-function offlineQueueLaden() {
-  try { return JSON.parse(localStorage.getItem(OFFLINE_KEY)||"[]"); }
-  catch(e) { return []; }
-}
-function offlineQueueSpeichern(q) {
-  try { localStorage.setItem(OFFLINE_KEY, JSON.stringify(q)); } catch(e) {}
-}
-function offlineQueueHinzufuegen(eintrag) {
-  const q = offlineQueueLaden();
-  const idx = q.findIndex(e => e.datum===eintrag.datum && e.pid===eintrag.pid);
-  if(idx >= 0) q.splice(idx, 1);
-  q.push(eintrag);
-  offlineQueueSpeichern(q);
-  offlineBannerAktualisieren();
-}
-function offlineBannerAktualisieren() {
-  const q = offlineQueueLaden();
-  const anzahl = q.length;
-  ["desktop"].forEach(t => {
-    const banner = document.getElementById("offline-banner-"+t);
-    const count  = document.getElementById("offline-count-"+t);
-    if(!banner) return;
-    if(istOffline || anzahl > 0) {
-      banner.classList.add("show");
-      if(count) count.textContent = anzahl;
-    } else {
-      banner.classList.remove("show");
-    }
-  });
-}
-async function offlineQueueSync() {
-  const q = offlineQueueLaden();
-  if(q.length === 0) return;
-  setAutosaveStatus("saving");
-  const erfolgreich = [];
-  for(const e of q) {
-    try {
-      const res = await api("togglePerson", {datum:e.datum, pid:e.pid, an:e.an, name:e.name, abteilung:e.abteilung});
-      if(res && res.ok) erfolgreich.push(e);
-      else break;
-    } catch(err) { break; }
-  }
-  const rest = q.filter(e => !erfolgreich.some(f => f.datum===e.datum && f.pid===e.pid));
-  offlineQueueSpeichern(rest);
-  if(rest.length === 0) {
-    istOffline = false;
-    offlineBannerAktualisieren();
-    setAutosaveStatus("saved");
-    if(erfolgreich.length > 0) toast("✓ "+erfolgreich.length+" Änderungen synchronisiert");
-  }
-}
-
-window.addEventListener("online",  () => { istOffline=false; offlineBannerAktualisieren(); setTimeout(offlineQueueSync, 1000); });
-window.addEventListener("offline", () => { istOffline=true;  offlineBannerAktualisieren(); setAutosaveStatus("offline"); });
-
-// ── Service Worker ──
-if("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js", {scope: "./"})
-      .then(reg => {
-        reg.addEventListener("updatefound", () => {
-          const newSW = reg.installing;
-          newSW.addEventListener("statechange", () => {
-            if(newSW.state === "installed" && navigator.serviceWorker.controller) {
-              toast("App-Update verfügbar — Seite neu laden");
-            }
-          });
-        });
-      })
-      .catch(err => console.log("SW Fehler:", err));
-  });
-}
-
 // Debounce-Timer pro Zähler
 const zaehlerTimer = {};
 
-// Touch-Gerät erkennen (auch iPad mit Desktop-Mode)
+// Gerät erkennen
 (function(){
-  const isTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
-  const isIpad = /iPad/.test(navigator.userAgent) || 
-                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if(isTouch || isIpad) {
-    document.body.classList.add("is-touch");
-  }
+  const ua = navigator.userAgent;
+  const isIphone = /iPhone/.test(ua);
+  const isIpod   = /iPod/.test(ua);
+  const isIpad   = /iPad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isTouch  = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+  if(isIphone) document.body.dataset.device = "iphone";
+  else if(isIpod) document.body.dataset.device = "ipod";
+  else if(isIpad) document.body.dataset.device = "ipad";
+  else if(isTouch) document.body.dataset.device = "touch";
+  else document.body.dataset.device = "desktop";
+  if(isTouch || isIpad) document.body.classList.add("is-touch");
 })();
 
 function stepperChange(id, delta) {
@@ -921,7 +1044,69 @@ function alphaScroll(b) {
   setTimeout(()=>document.querySelectorAll(".alpha-sidebar span").forEach(s=>s.classList.remove("active")),400);
 }
 
-// Queue für ausstehende Toggle-Operationen
+// ── Offline-System ──
+const OFFLINE_KEY = "catering_offline_queue";
+let istOffline = false;
+
+function offlineQueueLaden() {
+  try { return JSON.parse(localStorage.getItem(OFFLINE_KEY)||"[]"); }
+  catch(e) { return []; }
+}
+function offlineQueueSpeichern(q) {
+  try { localStorage.setItem(OFFLINE_KEY, JSON.stringify(q)); } catch(e) {}
+}
+function offlineQueueHinzufuegen(eintrag) {
+  const q = offlineQueueLaden();
+  // Gleichen Eintrag ersetzen
+  const idx = q.findIndex(e => e.datum===eintrag.datum && e.pid===eintrag.pid);
+  if(idx >= 0) q.splice(idx, 1);
+  q.push(eintrag);
+  offlineQueueSpeichern(q);
+  offlineBannerAktualisieren();
+}
+function offlineBannerAktualisieren() {
+  const q = offlineQueueLaden();
+  const anzahl = q.length;
+  const onLine = navigator.onLine;
+  ["touch","desktop"].forEach(t => {
+    const banner = document.getElementById("offline-banner-"+t);
+    const count  = document.getElementById("offline-count-"+t);
+    if(!banner) return;
+    if(istOffline || anzahl > 0) {
+      banner.classList.add("show");
+      if(count) count.textContent = anzahl + " | istOffline:" + istOffline + " | onLine:" + onLine;
+    } else {
+      banner.classList.remove("show");
+    }
+  });
+}
+async function offlineQueueSync() {
+  const q = offlineQueueLaden();
+  if(q.length === 0) return;
+  setAutosaveStatus("saving");
+  const erfolgreich = [];
+  for(const e of q) {
+    try {
+      const res = await api("togglePerson", {datum:e.datum, pid:e.pid, an:e.an, name:e.name, abteilung:e.abteilung});
+      if(res && res.ok) erfolgreich.push(e);
+      else break;
+    } catch(err) { break; }
+  }
+  const rest = q.filter(e => !erfolgreich.some(f => f.datum===e.datum && f.pid===e.pid));
+  offlineQueueSpeichern(rest);
+  if(rest.length === 0) {
+    istOffline = false;
+    offlineBannerAktualisieren();
+    setAutosaveStatus("saved");
+    if(erfolgreich.length > 0) toast("✓ "+erfolgreich.length+" Änderungen synchronisiert");
+  }
+}
+
+// Online/Offline Events
+window.addEventListener("online",  () => { istOffline=false; offlineBannerAktualisieren(); setTimeout(offlineQueueSync, 1000); });
+window.addEventListener("offline", () => { istOffline=true;  offlineBannerAktualisieren(); setAutosaveStatus("offline"); });
+
+// ── Toggle-Queue ──
 const toggleQueue = [];
 let verarbeiteQueue = false;
 
@@ -929,6 +1114,7 @@ function toggle(id) {
   const war = anwesendHeute.has(id);
   if(war) anwesendHeute.delete(id); else anwesendHeute.add(id);
   renderListe();
+  zeigeGespeichertBestaetigung(); // Sofortiges Feedback
   const p = allePersonen.find(x=>x.id===id);
   if(!p) return;
   const datum = document.getElementById("datum-input").value;
@@ -950,28 +1136,20 @@ async function verarbeiteToggleQueue() {
   setAutosaveStatus("saving");
   while(toggleQueue.length > 0) {
     const {datum, pid, an, p} = toggleQueue.shift();
-    const name = p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname;
-    const abteilung = p.position||"";
-    // Offline-Check vor dem Request
-    if(istOffline || !navigator.onLine) {
-      offlineQueueHinzufuegen({datum, pid, an, name, abteilung});
-      while(toggleQueue.length > 0) {
-        const next = toggleQueue.shift();
-        const nname = next.p.vorname ? `${next.p.nachname}, ${next.p.vorname}` : next.p.nachname;
-        offlineQueueHinzufuegen({datum:next.datum, pid:next.pid, an:next.an, name:nname, abteilung:next.p.position||""});
-      }
-      offlineBannerAktualisieren();
-      setAutosaveStatus("offline");
-      break;
-    }
     try {
-      const res = await api("togglePerson", {datum, pid, an, name, abteilung});
+      const res = await api("togglePerson", {
+        datum, pid, an,
+        name: p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname,
+        abteilung: p.position||""
+      });
       if(res.ok) {
         if(an) personenMitTeilnahme.add(pid);
+        setAutosaveStatus("saved");
       } else if(res.error === "Offline" || !navigator.onLine) {
-        // Service Worker meldet Offline
+        // Service Worker meldet Offline → in Queue
         istOffline = true;
-        offlineQueueHinzufuegen({datum, pid, an, name, abteilung});
+        const name = p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname;
+        offlineQueueHinzufuegen({datum, pid, an, name, abteilung: p.position||""});
         while(toggleQueue.length > 0) {
           const next = toggleQueue.shift();
           const nname = next.p.vorname ? `${next.p.nachname}, ${next.p.vorname}` : next.p.nachname;
@@ -979,16 +1157,20 @@ async function verarbeiteToggleQueue() {
         }
         offlineBannerAktualisieren();
         setAutosaveStatus("offline");
+        renderListe();
         break;
       } else {
+        // Rollback dieses Eintrags
         if(an) anwesendHeute.delete(pid); else anwesendHeute.add(pid);
         renderListe();
         setAutosaveStatus("err");
         zeigeFehlerOverlay("Server-Fehler: " + (res.error||""));
       }
     } catch(e) {
+      // Netzwerkfehler → Offline-Mode
       istOffline = true;
-      offlineQueueHinzufuegen({datum, pid, an, name, abteilung});
+      const name = p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname;
+      offlineQueueHinzufuegen({datum, pid, an, name, abteilung: p.position||""});
       while(toggleQueue.length > 0) {
         const next = toggleQueue.shift();
         const nname = next.p.vorname ? `${next.p.nachname}, ${next.p.vorname}` : next.p.nachname;
@@ -1001,11 +1183,11 @@ async function verarbeiteToggleQueue() {
     }
   }
   verarbeiteQueue = false;
-  if(toggleQueue.length === 0 && !istOffline) {
+  if(toggleQueue.length === 0) {
     setAutosaveStatus("saved");
     renderListe();
   } else {
-    verarbeiteToggleQueue();
+    verarbeiteToggleQueue(); // Noch mehr in der Queue
   }
 }
 
@@ -1022,7 +1204,11 @@ let speichertGerade = false;
 let speichernAusstehend = false;
 
 async function autosave() {
-  if(istOffline || !navigator.onLine) { setAutosaveStatus("offline"); return; }
+  // Offline → nicht versuchen, Queue kümmert sich darum
+  if(istOffline || !navigator.onLine) {
+    setAutosaveStatus("offline");
+    return;
+  }
   // Wenn gerade gespeichert wird: merken und später nochmal
   if (speichertGerade) {
     speichernAusstehend = true;
@@ -1054,9 +1240,11 @@ async function autosave() {
       zeigeFehlerOverlay("Server-Fehler: " + (res.error||"Unbekannt"));
     }
   } catch(e) {
+    // Netzwerkfehler → Offline-Mode statt Fehler-Overlay
     istOffline = true;
     offlineBannerAktualisieren();
     setAutosaveStatus("offline");
+    // Einträge in Offline-Queue sichern
     eintraege.forEach(e => {
       offlineQueueHinzufuegen({datum, pid:e.id, an:true, name:e.name, abteilung:e.abteilung});
     });
@@ -1070,8 +1258,18 @@ async function autosave() {
   }
 }
 
+let savedFlashTimer = null;
+function zeigeGespeichertBestaetigung() {
+  const el = document.getElementById("saved-flash");
+  if(!el) return;
+  clearTimeout(savedFlashTimer);
+  el.classList.add("show");
+  savedFlashTimer = setTimeout(() => el.classList.remove("show"), 900);
+}
+
 function zeigeFehlerOverlay(text) {
-  if(istOffline) return; // Im Offline-Modus kein Overlay
+  // Im Offline-Modus kein Fehler-Overlay — die Offline-Queue kümmert sich darum
+  if(istOffline) return;
   document.getElementById("fehler-text").textContent = text;
   document.getElementById("fehler-overlay").style.display = "flex";
 }
@@ -1081,9 +1279,19 @@ function fehlerOverlaySchliessen() {
 }
 
 async function fehlerRetry() {
-  if(!letzterSpeicherversuch) { fehlerOverlaySchliessen(); return; }
   fehlerOverlaySchliessen();
-  // Nochmal versuchen mit denselben Daten
+  if(!letzterSpeicherversuch) return;
+  // Offline? → in Queue speichern
+  if(istOffline || !navigator.onLine) {
+    const d = letzterSpeicherversuch;
+    d.eintraege.forEach(e => {
+      offlineQueueHinzufuegen({datum:d.datum, pid:e.id, an:true, name:e.name, abteilung:e.abteilung});
+    });
+    letzterSpeicherversuch = null;
+    setAutosaveStatus("offline");
+    toast("In Offline-Queue gespeichert — wird synchronisiert wenn online");
+    return;
+  }
   setAutosaveStatus("saving");
   try {
     const params = new URLSearchParams({
@@ -1103,8 +1311,16 @@ async function fehlerRetry() {
       zeigeFehlerOverlay("Retry fehlgeschlagen: " + (res.error||""));
     }
   } catch(e) {
-    setAutosaveStatus("err");
-    zeigeFehlerOverlay("Retry fehlgeschlagen: " + e.message);
+    // Auch hier offline
+    istOffline = true;
+    offlineBannerAktualisieren();
+    if(letzterSpeicherversuch) {
+      letzterSpeicherversuch.eintraege.forEach(ev => {
+        offlineQueueHinzufuegen({datum:letzterSpeicherversuch.datum, pid:ev.id, an:true, name:ev.name, abteilung:ev.abteilung});
+      });
+      letzterSpeicherversuch = null;
+    }
+    setAutosaveStatus("offline");
   }
 }
 
@@ -1133,15 +1349,24 @@ async function fehlerPruefen() {
 function setAutosaveStatus(s) {
   const dot=document.getElementById("autosave-dot");
   const text=document.getElementById("autosave-text");
+  if(!dot||!text) return;
   dot.className="autosave-dot";
   const uhr=new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+  // Touch-Topbar Status mitführen
+  const touchStatus=document.getElementById("touch-save-status");
+  if(touchStatus) {
+    if(s==="saving"||s==="pending") { touchStatus.innerHTML='<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f0a500;animation:pulse .8s ease-in-out infinite;margin-right:5px;vertical-align:middle"></span><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">speichere…</span>'; }
+    else if(s==="saved") { touchStatus.innerHTML='<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle"></span><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">'+uhr+'</span>'; }
+    else if(s==="err")   { touchStatus.innerHTML='<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-right:5px;vertical-align:middle"></span><span style="font-family:var(--mono);font-size:12px;color:var(--red)">Fehler</span>'; }
+    else if(s==="offline") { touchStatus.innerHTML='<span style="font-family:var(--mono);font-size:12px;color:var(--muted)">offline</span>'; }
+    else { touchStatus.innerHTML=""; }
+  }
   if(s==="idle")    {text.textContent="–";}
   if(s==="laden")   {text.textContent="Lade…";dot.classList.add("saving");}
   if(s==="pending") {text.textContent="Nicht gespeichert…";}
   if(s==="saving")  {text.textContent="Speichere…";dot.classList.add("saving");}
   if(s==="saved")   {text.textContent=`Gespeichert ${uhr}`;dot.classList.add("saved");}
   if(s==="err")     {text.textContent="Fehler beim Speichern";dot.classList.add("err");}
-  if(s==="offline") {text.textContent="Offline — Änderungen ausstehend";dot.classList.add("offline");}
 }
 
 // ── Personenverwaltung ──
@@ -1683,6 +1908,242 @@ function pdfExport() {
 
   doc.save(`catering_${monat}${projekt.replace(" · ","_")}.pdf`);
   toast("PDF exportiert");
+}
+
+
+// ── Service Worker registrieren ──
+if("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", {scope: "./"})
+      .then(reg => {
+        console.log("SW registriert:", reg.scope);
+        // Auf Update prüfen
+        reg.addEventListener("updatefound", () => {
+          const newSW = reg.installing;
+          newSW.addEventListener("statechange", () => {
+            if(newSW.state === "installed" && navigator.serviceWorker.controller) {
+              toast("App-Update verfügbar — Seite neu laden");
+            }
+          });
+        });
+      })
+      .catch(err => console.log("SW Fehler:", err));
+  });
+}
+
+// ══ TOUCH INTERFACE JS ══════════════════════════════════════
+
+let touchZaehlerTimer = null;
+
+function touchInit() {
+  // Datum in Header und Tab
+  const h = heute();
+  const monate = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+  const [y,m,t] = h.split("-");
+  const datumText = `${parseInt(t)}. ${monate[parseInt(m)-1]}`;
+  const el = document.getElementById("touch-datum-tab");
+  if(el) el.textContent = `${parseInt(t)}.${m}.${y}`;
+  const hdr = document.getElementById("touch-datum-header");
+  if(hdr) hdr.textContent = `vom ${datumText}`;
+
+  // Projektkürzel
+  const proj = document.getElementById("touch-projekt");
+  if(proj) proj.textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
+
+  // Komparsen-Wert laden
+  const komp = parseInt(document.getElementById("komparsen-input")?.value)||0;
+  const ti = document.getElementById("touch-komp-input");
+  if(ti) ti.value = komp;
+
+  // Long-press auf Touch-Brand
+  const brand = document.getElementById("touch-brand-btn");
+  if(brand) {
+    let t = null;
+    brand.addEventListener("touchstart", ()=>{ t=setTimeout(()=>{ touchZuUebersicht(); },3000); }, {passive:true});
+    brand.addEventListener("touchend",   ()=>clearTimeout(t));
+    brand.addEventListener("touchcancel",()=>clearTimeout(t));
+  }
+
+  // Tab-Wechsel
+  document.querySelectorAll(".touch-tab[data-touch-tab]").forEach(tab=>{
+    tab.addEventListener("click", ()=>{
+      document.querySelectorAll(".touch-tab").forEach(t=>t.classList.remove("active"));
+      document.querySelectorAll(".touch-panel").forEach(p=>p.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("touch-panel-"+tab.dataset.touchTab).classList.add("active");
+    });
+  });
+}
+
+function touchZuUebersicht() {
+  document.getElementById("app-touch").classList.remove("active");
+  document.getElementById("app").classList.add("active");
+  // Zurück-Button einblenden
+  document.getElementById("topbar-back-touch").style.display = "flex";
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  const exportTab = document.querySelector('[data-tab="export"]');
+  if(exportTab) { exportTab.classList.add("active"); exportTab.style.display="flex"; }
+  document.getElementById("tab-export")?.classList.add("active");
+  ladeVerfuegbareMonate();
+  toast("Übersicht");
+}
+
+function zurückZuTouch() {
+  document.getElementById("app").classList.remove("active");
+  document.getElementById("app-touch").classList.add("active");
+  document.getElementById("topbar-back-touch").style.display = "none";
+}
+
+function touchSuche() {
+  const val = document.getElementById("touch-suche").value;
+  document.getElementById("touch-suche-clear").style.display = val ? "flex" : "none";
+  touchRenderListe(val.toLowerCase().trim());
+}
+
+function touchSucheLeeren() {
+  document.getElementById("touch-suche").value = "";
+  document.getElementById("touch-suche-clear").style.display = "none";
+  document.getElementById("touch-list").innerHTML =
+    '<div style="color:var(--muted);font-size:15px;text-align:center;padding:32px 0">Namen eingeben um zu suchen…</div>';
+}
+
+function touchRenderListe(suche) {
+  const container = document.getElementById("touch-list");
+  if(!suche || suche.length < 1) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:15px;text-align:center;padding:32px 0">Namen eingeben um zu suchen…</div>';
+    return;
+  }
+
+  // Nur Wortanfänge
+  // Nur nach Nachname suchen
+  const treffer = allePersonen.filter(p => {
+    return p.nachname.toLowerCase().startsWith(suche);
+  });
+
+  if(treffer.length === 0) {
+    // Kein Treffer → Anlegen anbieten
+    const anzeige = suche.charAt(0).toUpperCase() + suche.slice(1);
+    container.innerHTML = `
+      <div class="touch-no-result">Kein Eintrag gefunden für „${anzeige}"</div>
+      <div class="touch-add-hint" onclick="touchNeuePersonOeffnen('${anzeige}')">
+        <div class="hint-name">+ ${anzeige} anlegen</div>
+        <div class="hint-sub">Als neuen Teilnehmer eintragen</div>
+      </div>`;
+    return;
+  }
+
+  const datum = heute();
+  container.innerHTML = treffer.map(p => {
+    const an = anwesendHeute.has(p.id);
+    const name = p.vorname ? `${p.nachname}, ${p.vorname}` : p.nachname;
+    return `<div class="touch-person-row${an?" checked":""}" onclick="touchToggle('${p.id}')">
+      <div class="touch-checkbox">${an?"✓":""}</div>
+      <div style="flex:1;min-width:0">
+        <div class="touch-person-name">${p.nachname}${p.vorname?", <span style='font-weight:400;color:var(--muted)'>"+p.vorname+"</span>":""}</div>
+        ${p.position?`<div class="touch-person-pos">${p.position}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function touchToggle(id) {
+  toggle(id);
+  // Nach Haken setzen: Suche zurücksetzen → Normalansicht
+  setTimeout(()=>{
+    document.getElementById("touch-suche").value = "";
+    document.getElementById("touch-suche-clear").style.display = "none";
+    document.getElementById("touch-list").innerHTML =
+      '<div style="color:var(--muted);font-size:15px;text-align:center;padding:32px 0">Namen eingeben um zu suchen…</div>';
+    touchSaveStatusAktualisieren();
+  }, 300);
+}
+
+function touchSaveStatusAktualisieren() {
+  // wird jetzt durch setAutosaveStatus automatisch mitgezogen
+}
+
+// Komparsen Stepper
+function touchStepperChange(delta) {
+  const inp = document.getElementById("touch-komp-input");
+  const val = parseInt(inp.value)||0;
+  inp.value = Math.max(0, val + delta);
+  // Sync mit Haupt-Stepper
+  const mainInp = document.getElementById("komparsen-input");
+  if(mainInp) mainInp.value = inp.value;
+  touchZaehlerSpeichern();
+}
+
+function touchZaehlerSpeichern() {
+  const inp = document.getElementById("touch-komp-input");
+  const mainInp = document.getElementById("komparsen-input");
+  if(mainInp) mainInp.value = inp.value;
+  const datum = heute();
+  const status = document.getElementById("touch-komp-status");
+  if(status) status.textContent = "Speichere…";
+  clearTimeout(touchZaehlerTimer);
+  touchZaehlerTimer = setTimeout(async ()=>{
+    const wert = parseInt(inp.value)||0;
+    try {
+      const res = await api("setZaehler", {datum, pid:"KOMP01", name:"Komparsen", abteilung:"10 Komparsen", wert});
+      if(status) status.textContent = res.ok ? `Gespeichert ✓` : "Fehler";
+    } catch(e) {
+      if(status) status.textContent = "Offline";
+    }
+  }, 800);
+}
+
+// Neue Person
+function touchNeuePersonOeffnen(vorname="") {
+  document.getElementById("touch-new-dialog").classList.add("open");
+  document.getElementById("touch-new-error").textContent = "";
+  document.getElementById("touch-new-status").style.display = "none";
+  // Suchbegriff als Nachname vorausfüllen
+  const suche = document.getElementById("touch-suche").value.trim();
+  document.getElementById("touch-new-nachname").value = suche ? suche.charAt(0).toUpperCase()+suche.slice(1) : "";
+  document.getElementById("touch-new-vorname").value = "";
+  document.getElementById("touch-new-abt").selectedIndex = 0;
+  setTimeout(()=>document.getElementById("touch-new-nachname").focus(), 100);
+}
+
+function touchNeuePersonSchliessen() {
+  document.getElementById("touch-new-dialog").classList.remove("open");
+}
+
+async function touchPersonAnlegen() {
+  const nachname = document.getElementById("touch-new-nachname").value.trim();
+  const vorname  = document.getElementById("touch-new-vorname").value.trim();
+  const abteilung = document.getElementById("touch-new-abt").value;
+  if(!nachname) { document.getElementById("touch-new-error").textContent = "Nachname erforderlich"; return; }
+
+  const btn = document.getElementById("touch-new-save-btn");
+  btn.disabled = true;
+  document.getElementById("touch-new-status").style.display = "flex";
+  document.getElementById("touch-new-error").textContent = "";
+
+  const name = vorname ? `${nachname}, ${vorname}` : nachname;
+  try {
+    const res = await api("addPerson", {name, abteilung, rolle:""});
+    if(res.ok) {
+      // Person zu lokaler Liste hinzufügen
+      allePersonen = sortNachname([...allePersonen, {id:res.id, nachname, vorname, position:abteilung}]);
+      // Sofort als anwesend markieren
+      toggle(res.id);
+      touchNeuePersonSchliessen();
+      // Suche auf neuen Namen setzen
+      document.getElementById("touch-suche").value = nachname;
+      document.getElementById("touch-suche-clear").style.display = "flex";
+      touchSuche();
+      toast(`${name} angelegt & eingetragen`);
+    } else {
+      document.getElementById("touch-new-error").textContent = res.error||"Fehler";
+    }
+  } catch(e) {
+    document.getElementById("touch-new-error").textContent = "Verbindungsfehler";
+  } finally {
+    btn.disabled = false;
+    document.getElementById("touch-new-status").style.display = "none";
+  }
 }
 </script>
 </body>
