@@ -48,7 +48,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .btn-icon:hover{color:var(--text)}
 
 #app{display:none;height:100dvh;flex-direction:column;overflow:hidden}
-#app.active{display:flex}
+#app.active{display:flex;flex-direction:column}
 
 .topbar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 16px;height:58px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .topbar-brand{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;flex:1}
@@ -59,8 +59,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .tab:hover:not(.active){color:var(--text)}
 
-.panel{display:none;flex:1;overflow-y:auto;padding-bottom:120px;scroll-padding-top:16px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.panel{display:none;flex:1;overflow-y:auto;padding-bottom:120px;scroll-padding-top:16px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
 .panel.active{display:block}
+#app.active{display:flex;flex-direction:column}
 .content{padding:16px;max-width:680px;margin:0 auto}
 
 .date-bar{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px;box-shadow:var(--shadow)}
@@ -633,11 +634,17 @@ function wallpaperSetzen() {
   const tag = new Date().getDay(); // 0=So, 1=Mo, 2=Di...
   const bilder = {0:"So.JPG", 1:"Mo.JPG", 2:"Di.JPG", 3:"Mi.JPG", 4:"Do.JPG", 5:"Fr.JPG", 6:"Sa.JPG"};
   const datei = bilder[tag] || "Mo.JPG";
-  const bg = `url('${datei}') center/cover no-repeat fixed`;
   const appTouch = document.getElementById("app-touch");
   const app = document.getElementById("app");
-  if(appTouch) appTouch.style.background = bg;
-  if(app) app.style.background = bg;
+  // background-image separat setzen damit flex-Layout erhalten bleibt
+  [appTouch, app].forEach(el => {
+    if(!el) return;
+    el.style.backgroundImage = `url('${datei}')`;
+    el.style.backgroundSize = "cover";
+    el.style.backgroundPosition = "center";
+    el.style.backgroundRepeat = "no-repeat";
+    el.style.backgroundAttachment = "fixed";
+  });
 }
 function formatDatum(d) { if(!d)return""; const[y,m,t]=d.split("-"); return`${t}.${m}.${y}`; }
 function formatDatumMitTag(d) {
