@@ -701,7 +701,7 @@ function mapPersonen(arr) {
 document.getElementById("pw-input").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
 
 // Auto-Login bei Seitenwechsel (sessionStorage)
-(function() {
+(async function() {
   const sessionPw = sessionStorage.getItem("catering_session_pw");
   if(sessionPw) {
     const personen = JSON.parse(sessionStorage.getItem("catering_session_personen")||"[]");
@@ -721,15 +721,17 @@ document.getElementById("pw-input").addEventListener("keydown",e=>{if(e.key==="E
     if(touchP) touchP.textContent = PROJEKT_KUERZEL ? "· " + PROJEKT_KUERZEL : "";
     // Touch oder Desktop?
     const isTouch = navigator.maxTouchPoints > 0 || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    heuteDatum();
     if(isTouch) {
       document.getElementById("app-touch").classList.add("active");
+      // Erst Datum laden, dann Liste anzeigen
+      await datumWechseln();
       touchInit();
     } else {
       document.getElementById("app").classList.add("active");
+      await datumWechseln();
       renderPersonenverwaltung();
     }
-    heuteDatum();
-    if(!isTouch) datumWechseln();
   }
 })();
 
@@ -2125,8 +2127,8 @@ function touchInit() {
   const datumText = `${parseInt(t)}. ${monate[parseInt(m)-1]}`;
   const hdr = document.getElementById("touch-datum-header");
   if(hdr) hdr.textContent = `vom ${datumText}`;
-  // Listenansicht: sofort alle Personen anzeigen
-  renderTouchListe("");
+  // Listenansicht: alle Personen anzeigen
+  setTimeout(() => renderTouchListe(""), 50);
 
   // Projektkürzel
   const proj = document.getElementById("touch-projekt");
