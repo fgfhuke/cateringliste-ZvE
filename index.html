@@ -267,7 +267,7 @@ body.is-touch .tabs{padding:0 4px}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
       <div class="login-logo">Film · Set</div>
       <div style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em;line-height:1.6">
-        <div>V 3.9</div>
+        <div>V 4.0</div>
         <div style="font-size:10px">© JH 2026</div>
       </div>
     </div>
@@ -287,7 +287,7 @@ body.is-touch .tabs{padding:0 4px}
     <button class="btn-icon" id="topbar-back-touch" onclick="zurückZuTouch()" title="Zurück zur mobilen Ansicht" style="display:none;font-size:22px;color:var(--accent)">←</button>
     <div class="topbar-brand" id="topbar-brand-btn" style="cursor:pointer;user-select:none;-webkit-user-select:none">Catering <span id="topbar-projekt" style="opacity:0.7;font-size:11px"></span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 3.9</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--border2);letter-spacing:0.08em">V 4.0</div>
     <button class="btn-icon" onclick="logout()" title="Abmelden" style="padding:8px;background:transparent;border:none;color:var(--muted);cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
   </div>
   <div class="tabs">
@@ -317,9 +317,9 @@ body.is-touch .tabs{padding:0 4px}
       </div>
       <button class="btn btn-ghost btn-sm" onclick="heuteDatum()">Heute</button>
     </div>
-    <!-- Stepper: Komparsen + Gäste -->
-    <div style="display:flex;gap:8px;margin-bottom:8px">
-      <div style="flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px 10px;box-shadow:var(--shadow)">
+    <!-- Stepper: Komparsen -->
+    <div style="margin-bottom:8px">
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px 10px;box-shadow:var(--shadow);max-width:200px">
         <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Komparsen</div>
         <div class="stepper">
           <button class="stepper-btn" onclick="stepperChange('komparsen-input',-1)">−</button>
@@ -327,15 +327,9 @@ body.is-touch .tabs{padding:0 4px}
           <button class="stepper-btn" onclick="stepperChange('komparsen-input',1)">+</button>
         </div>
       </div>
-      <div style="flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:8px 10px;box-shadow:var(--shadow)">
-        <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Gäste</div>
-        <div class="stepper">
-          <button class="stepper-btn" onclick="stepperChange('gaeste-input',-1)">−</button>
-          <input class="stepper-val" type="number" id="gaeste-input" min="0" value="0">
-          <button class="stepper-btn" onclick="stepperChange('gaeste-input',1)">+</button>
-        </div>
-      </div>
     </div>
+    <!-- Gäste-Input versteckt (für Fallback-Funktionen) -->
+    <input type="hidden" id="gaeste-input" value="0">
     <div class="autosave-bar" style="padding:2px 0 6px">
       <div class="autosave-dot" id="autosave-dot"></div>
       <span id="autosave-text">–</span>
@@ -513,7 +507,7 @@ body.is-touch .tabs{padding:0 4px}
   <div class="touch-topbar">
     <div class="touch-brand" id="touch-brand-btn" style="font-size:17px">Catering <span id="touch-projekt" style="opacity:.7;font-size:13px"></span></div>
     <span class="touch-save-status" id="touch-save-status"></span>
-    <span style="font-family:var(--mono);font-size:13px;color:var(--border2);letter-spacing:.08em" id="touch-version">V 3.9</span>
+    <span style="font-family:var(--mono);font-size:13px;color:var(--border2);letter-spacing:.08em" id="touch-version">V 4.0</span>
     <button class="btn-icon" onclick="logout()" style="font-size:18px;color:var(--muted)" style="padding:8px;background:transparent;border:none;color:var(--muted);cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
   </div>
 
@@ -954,8 +948,8 @@ async function speichereZaehler(datum, pid, name, abt, wert) {
   }
   try {
     const res = await api("setZaehler", {datum, pid, name, abteilung:abt, wert});
-    if(res.ok) setAutosaveStatus("saved");
-    else setAutosaveStatus("err");
+    if(res.ok) { setAutosaveStatus("saved"); }
+    else { setAutosaveStatus("err"); toast("Fehler: " + (res.error||"unbekannt")); }
   } catch(e) {
     istOffline = true;
     offlineBannerAktualisieren();
