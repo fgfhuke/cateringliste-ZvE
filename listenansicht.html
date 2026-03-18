@@ -514,18 +514,18 @@ body.is-touch .tabs{padding:0 4px}
   <div class="touch-topbar">
     <div class="touch-brand" id="touch-brand-btn" style="font-size:17px">Listenansicht <span id="touch-projekt" style="opacity:.7;font-size:13px"></span></div>
     <span class="touch-save-status" id="touch-save-status"></span>
-    <a href="index.html" style="font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-bg);border:1.5px solid var(--green-brd);border-radius:6px;padding:5px 10px;text-decoration:none;white-space:nowrap;font-family:var(--sans)">← Zurück</a>
     <span style="font-family:var(--mono);font-size:13px;color:var(--border2);letter-spacing:.08em" id="touch-version">V 3.3</span>
     <button class="btn-icon" onclick="logout()" style="font-size:18px;color:var(--muted)" style="padding:8px;background:transparent;border:none;color:var(--muted);cursor:pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
   </div>
 
   <!-- Header-Bereich -->
   <div style="background:var(--surface);border-bottom:1.5px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.06)">
-    <!-- Erste Zeile: Überschrift = Tab Catering Liste -->
+    <!-- Erste Zeile: Überschrift mit Zurück-Link links integriert -->
     <div class="touch-tab active" data-touch-tab="catering" id="touch-tab-catering"
-      style="display:block;text-align:center;padding:14px 16px 10px;border-bottom:none;width:100%;font-size:15px;background:linear-gradient(135deg,#e8f4ed 0%,#d0ead8 100%)">
-      <div style="font-size:26px;font-weight:700;color:var(--text);line-height:1.2">Catering Liste</div>
-      <div style="font-size:18px;font-weight:600;color:var(--accent);margin-top:3px" id="touch-datum-header"></div>
+      style="display:block;text-align:center;padding:12px 16px 10px;border-bottom:none;width:100%;font-size:15px;background:linear-gradient(135deg,#e8f4ed 0%,#d0ead8 100%);position:relative">
+      <a href="index.html" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:var(--accent);background:rgba(255,255,255,0.7);border:1px solid var(--green-brd);border-radius:5px;padding:3px 7px;text-decoration:none;white-space:nowrap;font-family:var(--sans);line-height:1.4">← Zurück</a>
+      <div style="font-size:22px;font-weight:700;color:var(--text);line-height:1.2">Catering Liste</div>
+      <div style="font-size:16px;font-weight:600;color:var(--accent);margin-top:2px" id="touch-datum-header"></div>
     </div>
     <!-- Zweite Zeile: Komparsen | Sortierung | Neuer Teilnehmer -->
     <div style="display:flex;align-items:center;padding:0 12px 0;border-top:1px solid var(--border)">
@@ -2036,10 +2036,12 @@ function renderTouchListe(suche) {
   }
 
   // Zeilenhöhe + Schriftgröße je nach Modus
-  const rowPad     = istKompakt ? "6px 10px"  : "12px 12px";
-  const nameSize   = istKompakt ? "14px" : "18px";
-  const posSize    = istKompakt ? "11px" : "13px";
-  const checkSize  = istKompakt ? "24px" : "30px";
+  const rowPad     = istKompakt ? "4px 8px"   : "12px 12px";
+  const nameSize   = istKompakt ? "18px"       : "18px"; // Schrift gleich
+  const posSize    = istKompakt ? "11px"       : "13px";
+  const checkSize  = istKompakt ? "18px"       : "30px";
+  const rowGap     = istKompakt ? "1px"        : "3px";
+  const checkFont  = istKompakt ? "11px"       : "18px";
 
   let letzteGruppe = "";
   container.innerHTML = sortiert.map(p => {
@@ -2075,8 +2077,8 @@ function renderTouchListe(suche) {
     const zeigPos = p.position && !istAbt && !istKompakt;
 
     return div + `<div class="touch-person-row${an?" checked":""}" onclick="touchToggle('${p.id}')"
-      style="padding:${rowPad};margin-bottom:${istKompakt?"1px":"3px"}">
-      <div class="touch-checkbox" style="width:${checkSize};height:${checkSize};font-size:${istKompakt?"14px":"18px"}">${an?"✓":""}</div>
+      style="padding:${rowPad};margin-bottom:${rowGap}">
+      <div class="touch-checkbox" style="width:${checkSize};height:${checkSize};font-size:${checkFont};flex-shrink:0">${an?"✓":""}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:${nameSize};line-height:1.2">${nameHTML}</div>
         ${zeigPos?`<div style="font-size:${posSize};color:var(--muted);font-family:var(--mono)">${p.position}</div>`:""}
@@ -2085,14 +2087,20 @@ function renderTouchListe(suche) {
   }).join("");
 }
 
-// touchToggle für Listenansicht: kein Auto-Reset der Suche
+// touchToggle für Listenansicht: Liste bleibt, nur Checkbox aktualisieren
 function touchToggle(id) {
   toggle(id);
+  // Nur die betroffene Zeile visuell aktualisieren
   setTimeout(() => {
-    const suche = document.getElementById("touch-suche")?.value?.toLowerCase().trim() || "";
-    renderTouchListe(suche);
+    const row = document.querySelector(`.touch-person-row[onclick="touchToggle('${id}')"]`);
+    if(row) {
+      const an = anwesendHeute.has(id);
+      if(an) row.classList.add("checked"); else row.classList.remove("checked");
+      const cb = row.querySelector(".touch-checkbox");
+      if(cb) cb.textContent = an ? "✓" : "";
+    }
     touchSaveStatusAktualisieren();
-  }, 200);
+  }, 50);
 }
 
 // ── Service Worker registrieren ──
